@@ -6,7 +6,7 @@ plugins {
 
 group = 'com.kdt'
 version = '0.0.1-SNAPSHOT'
-description = 'NBE13-15-1-team01'
+description = 'NBE13-15-1-team08'
 
 java {
     toolchain {
