@@ -1,7 +1,6 @@
 package com.kdt.nbe151team08.menu.dto;
 
 import com.kdt.nbe151team08.menu.entity.Menu;
-
 public record MenuResponse(
         Integer id, Integer categoryId, String name, Integer price, String description, Boolean available) {
 

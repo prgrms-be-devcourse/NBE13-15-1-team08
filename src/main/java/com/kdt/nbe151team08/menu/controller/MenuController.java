@@ -3,7 +3,6 @@ package com.kdt.nbe151team08.menu.controller;
 import com.kdt.nbe151team08.menu.dto.MenuAvailabilityRequest;
 import com.kdt.nbe151team08.menu.dto.MenuRequest;
 import com.kdt.nbe151team08.menu.dto.MenuResponse;
-import com.kdt.nbe151team08.menu.entity.Menu;
 import com.kdt.nbe151team08.menu.service.MenuService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
