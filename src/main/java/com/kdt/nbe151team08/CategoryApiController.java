@@ -1,1 +1,1 @@
-//controller
+//CategoryApiController 재구현예정
