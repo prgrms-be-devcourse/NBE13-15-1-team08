@@ -17,6 +17,10 @@ import java.util.List;
  * 카테고리 HTTP API.
  * A01, A02, A03, A04, A05, A15.
  */
+@CrossOrigin(origins = {
+        "http://localhost:5500",
+        "http://127.0.0.1:5500"
+})
 @RestController
 @RequestMapping("/api/v1/categories")
 public class CategoryApiController {
