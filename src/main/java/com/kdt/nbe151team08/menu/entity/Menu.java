@@ -1,4 +1,4 @@
-package com.kdt.nbe13151team08.menu.entity;
+package com.kdt.nbe151team08.menu.entity;
 
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -50,7 +50,7 @@ public class Menu {
         this.description = description;
     }
 
-    public void availableChange(
+    public void isAvailability(
             Boolean available
     ){
         this.available = available;
