@@ -26,7 +26,8 @@ public class OrderDto {
     }
 
     public record Response(Integer id, String email, String address, String postcode,
-                           LocalDate shippingDate, LocalDateTime createdAt, LocalDateTime cancelledAt,
+                           LocalDate shippingDate, @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ssXXX", timezone = "Asia/Seoul")
+                           OffsetDateTime createdAt, LocalDateTime cancelledAt,
                            Integer totalAmount, OrderStatus status, String memo,
                            List<ItemResponse> items) {
         public static Response from(Order order) {
@@ -36,7 +37,8 @@ public class OrderDto {
                     order.getAddress(),
                     order.getPostcode(),
                     order.getShippingDate(),
-                    order.getCreatedAt(),
+                    order.getCreatedAt() == null ? null
+                            : order.getCreatedAt().atZone(ZoneId.of("Asia/Seoul")).toOffsetDateTime(),
                     order.getCancelledAt(),
                     order.getTotalAmount(),
                     order.getStatus(),
