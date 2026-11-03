@@ -3,8 +3,8 @@ package com.kdt.nbe151team08.order.service;
 
 import com.kdt.nbe151team08.common.exception.NotFoundException;
 import com.kdt.nbe151team08.common.exception.ValidationException;
-import com.kdt.nbe151team08.order.MenuInfo;
-import com.kdt.nbe151team08.order.MenuReader;
+import com.kdt.nbe151team08.menu.dto.MenuResponse;
+import com.kdt.nbe151team08.menu.service.MenuService;
 import com.kdt.nbe151team08.order.dto.OrderDto;
 import com.kdt.nbe151team08.order.entity.Order;
 import com.kdt.nbe151team08.order.entity.OrderItem;
@@ -21,7 +21,7 @@ import java.util.List;
 public class OrderService {
 
     private final OrderRepository orderRepository;
-    private final MenuReader menuReader;
+    private final MenuService menuService;
 
     // 이메일별 주문 목록 (최신순)
     public List<OrderDto.Summary> findByEmail(String email) {
@@ -103,11 +103,11 @@ public class OrderService {
 
     // 주문 당시의 메뉴 이름과 단가를 스냅샷으로 저장
     private OrderItem createItem(Integer menuId, int quantity) {
-        MenuInfo menu = menuReader.getMenu(menuId);
+        MenuResponse menu = menuService.getMenu((int)menuId);
         if (!menu.available()) {
-            throw new ValidationException("판매 중이 아닌 메뉴입니다: " + menu.name());
+            throw new ValidationException("판매 중이 아닌 메뉴입니다: ");
         }
-        return new OrderItem(menu.id(), menu.name(), menu.unitPrice(), quantity);
+        return new OrderItem(menu.id(), menu.name(), menu.price(), quantity);
     }
 
     private Order getOrder(Integer id) {
