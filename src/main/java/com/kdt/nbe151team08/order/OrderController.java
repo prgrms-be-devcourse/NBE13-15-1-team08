@@ -13,11 +13,11 @@ public class OrderController {
 
     private final OrderService orderService;
 
-    // 주문 목록 / 이메일별 주문: GET /api/v1/orders?email=user@example.com
-    /*@GetMapping
-    public List<OrderDto.Response> findAll(@RequestParam(required = false) String email) {
-        return orderService.findAll(email);
-    }*/
+    // 이메일별 주문: GET /api/v1/orders?email=user@example.com
+    @GetMapping
+    public List<OrderDto.Summary> findByEmail(@RequestParam(required = false) String email) {
+        return orderService.findByEmail(email);
+    }
 
     // 주문 상세: GET /api/v1/orders/{orderId}
     @GetMapping("/{orderId}")

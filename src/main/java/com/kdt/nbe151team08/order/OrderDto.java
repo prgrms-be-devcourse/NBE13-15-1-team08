@@ -1,7 +1,11 @@
 package com.kdt.nbe151team08.order;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneId;
 import java.util.List;
 
 public class OrderDto {
@@ -11,7 +15,7 @@ public class OrderDto {
                                 List<ItemRequest> items) {
     }
 
-    public record ItemRequest(Integer menuId, Integer quantity) {
+    public record ItemRequest(Integer menuId, Integer quantity, Integer unitPrice) {
     }
 
     public record MemoUpdateRequest(String memo) {
@@ -34,6 +38,27 @@ public class OrderDto {
                     order.getStatus(),
                     order.getMemo(),
                     order.getItems().stream().map(ItemResponse::from).toList()
+            );
+        }
+    }
+
+    // 이메일별 주문 목록 응답: [ { "id", "createdAt", "shippingDate", "totalAmount", "status" } ]
+    public record Summary(Integer id,
+                          @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ssXXX", timezone = "Asia/Seoul")
+                          OffsetDateTime createdAt,
+                          LocalDate shippingDate,
+                          Integer totalAmount,
+                          OrderStatus status) {
+        private static final ZoneId SEOUL = ZoneId.of("Asia/Seoul");
+
+        public static Summary from(Order order) {
+            return new Summary(
+                    order.getId(),
+                    // DB의 LocalDateTime(서울 시간)에 +09:00 오프셋을 붙임
+                    order.getCreatedAt() == null ? null : order.getCreatedAt().atZone(SEOUL).toOffsetDateTime(),
+                    order.getShippingDate(),
+                    order.getTotalAmount(),
+                    order.getStatus()
             );
         }
     }

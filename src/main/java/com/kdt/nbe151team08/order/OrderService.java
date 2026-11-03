@@ -16,12 +16,14 @@ public class OrderService {
     private final OrderRepository orderRepository;
     private final MenuReader menuReader;
 
-    // 주문 목록 (email이 있으면 해당 이메일의 주문만)
-    public List<OrderDto.Response> findAll(String email) {
-        List<Order> orders = (email == null || email.isBlank())
-                ? orderRepository.findAll()
-                : orderRepository.findByEmailOrderByCreatedAtDesc(email);
-        return orders.stream().map(OrderDto.Response::from).toList();
+    // 이메일별 주문 목록 (최신순)
+    public List<OrderDto.Summary> findByEmail(String email) {
+        if (email == null || email.isBlank()) {
+            throw new ValidationException("이메일은 필수입니다.");
+        }
+        return orderRepository.findByEmailOrderByCreatedAtDesc(email.trim()).stream()
+                .map(OrderDto.Summary::from)
+                .toList();
     }
 
     // 주문 상세
@@ -41,6 +43,7 @@ public class OrderService {
 
         // createdAt = 현재 시간, cancelledAt/shippingDate/memo = null, status = PLACED
         Order order = new Order(request.email(), request.address(), request.postcode());
+
 
         for (OrderDto.ItemRequest itemRequest : request.items()) {
             if (itemRequest.menuId() == null) {
