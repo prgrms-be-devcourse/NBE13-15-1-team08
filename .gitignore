@@ -35,3 +35,12 @@ out/
 
 ### VS Code ###
 .vscode/
+
+### Env ###
+.env
+.env.*
+!.env.example
+
+### Local Spring config (secrets) ###
+**/application-local.yaml
+**/application-local.yml

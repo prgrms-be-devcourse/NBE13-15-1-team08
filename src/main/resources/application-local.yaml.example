@@ -1,0 +1,6 @@
+# 이 파일을 복사해 application-local.yaml 로 저장한 뒤 본인 DB 정보를 입력하세요.
+# cp src/main/resources/application-local.yaml.example src/main/resources/application-local.yaml
+spring:
+  datasource:
+    username: root
+    password: your-password
