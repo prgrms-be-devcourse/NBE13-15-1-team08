@@ -1,5 +1,6 @@
-package com.kdt.nbe151team08;
+package com.kdt.nbe151team08.statistics.repository;
 
+import com.kdt.nbe151team08.statistics.dto.*;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
@@ -256,8 +257,6 @@ public class StatisticsRepository {
                     orderIds, orderCount, totalQuantity, totalAmount, items));
         }
 
-        //
         return result;
     }
-
 }

@@ -1,5 +1,10 @@
-package com.kdt.nbe151team08;
+package com.kdt.nbe151team08.statistics.service;
 
+import com.kdt.nbe151team08.statistics.repository.StatisticsRepository;
+import com.kdt.nbe151team08.statistics.dto.CustomerStatisticsResponse;
+import com.kdt.nbe151team08.statistics.dto.DeliveryBatchResponse;
+import com.kdt.nbe151team08.statistics.dto.MenuStatisticsResponse;
+import com.kdt.nbe151team08.statistics.dto.OrderStatisticsResponse;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
