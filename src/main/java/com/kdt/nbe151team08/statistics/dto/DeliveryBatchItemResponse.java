@@ -1,4 +1,4 @@
-package com.kdt.nbe151team08;
+package com.kdt.nbe151team08.statistics.dto;
 
 
 // A14 (배송 묶음 items)

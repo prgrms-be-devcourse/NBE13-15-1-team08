@@ -1,4 +1,4 @@
-package com.kdt.nbe151team08;
+package com.kdt.nbe151team08.statistics.dto;
 
 // A18 (접수일별 메뉴 통계)
 //MenuStatistics[] — 메뉴별 통계
