@@ -2,10 +2,8 @@ package com.kdt.nbe151team08.category.controller;
 
 import com.kdt.nbe151team08.category.dto.CategoryRequest;
 import com.kdt.nbe151team08.category.dto.CategoryResponse;
-import com.kdt.nbe151team08.category.entity.Category;
 import com.kdt.nbe151team08.category.service.CategoryService;
 import com.kdt.nbe151team08.menu.dto.MenuResponse;
-import com.kdt.nbe151team08.menu.entity.Menu;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -42,7 +40,7 @@ public class CategoryApiController {
      * GET /api/v1/categories/{categoryId} → 200 · Category
      */
     @GetMapping("/{categoryId}")
-    public CategoryResponse one(@PathVariable("categoryId") Integer categoryId) {
+    public CategoryResponse one(@PathVariable("categoryId") int categoryId) {
         return this.categoryService.one(categoryId);
     }
 
@@ -62,7 +60,7 @@ public class CategoryApiController {
      */
     @PutMapping("/{categoryId}")
     public CategoryResponse update(
-            @PathVariable("categoryId") Integer categoryId,
+            @PathVariable("categoryId") int categoryId,
             @RequestBody CategoryRequest request
     ) {
         return this.categoryService.update(categoryId, request);
@@ -74,7 +72,7 @@ public class CategoryApiController {
      */
     @DeleteMapping("/{categoryId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void delete(@PathVariable("categoryId") Integer categoryId) {
+    public void delete(@PathVariable("categoryId") int categoryId) {
         this.categoryService.delete(categoryId);
     }
 
@@ -83,7 +81,7 @@ public class CategoryApiController {
      * GET /api/v1/categories/{categoryId}/menus → 200 · Menu[]
      */
     @GetMapping("/{categoryId}/menus")
-    public List<MenuResponse> menus(@PathVariable("categoryId") Integer categoryId) {
+    public List<MenuResponse> menus(@PathVariable("categoryId") int categoryId) {
         return this.categoryService.menus(categoryId);
     }
 }

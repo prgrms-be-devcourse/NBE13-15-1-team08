@@ -41,7 +41,7 @@ public class CategoryService {
 
     /** A02 카테고리 상세 조회. 없으면 NotFoundException을 던집니다. */
     @Transactional(readOnly = true)
-    public CategoryResponse one(Integer categoryId) {
+    public CategoryResponse one(int categoryId) {
         Category category = this.categoryRepository.findById(categoryId)
                 .orElseThrow(() -> new NotFoundException("CATEGORY_NOT_FOUND", "카테고리를 찾을 수 없습니다."));
         return new CategoryResponse(category.getCategoryId(), category.getName());
@@ -76,7 +76,7 @@ public class CategoryService {
      * 검사 순서: 이름 형식(400) → 존재(404) → 중복(409).
      */
     @Transactional
-    public CategoryResponse update(Integer categoryId, CategoryRequest request) {
+    public CategoryResponse update(int categoryId, CategoryRequest request) {
         String name = request.name();
         if (name == null) {
             name = "";
@@ -103,7 +103,7 @@ public class CategoryService {
      * 메뉴가 연결된 카테고리는 CategoryInUseException으로 삭제를 막습니다.
      */
     @Transactional
-    public void delete(Integer categoryId) {
+    public void delete(int categoryId) {
         Category category = this.categoryRepository.findById(categoryId)
                 .orElseThrow(() -> new NotFoundException("CATEGORY_NOT_FOUND", "카테고리를 찾을 수 없습니다."));
 
@@ -120,7 +120,7 @@ public class CategoryService {
      * DB 컬럼(menuName, unitPrice)은 응답 필드(name, price)로 변환합니다.
      */
     @Transactional(readOnly = true)
-    public List<MenuResponse> menus(Integer categoryId) {
+    public List<MenuResponse> menus(int categoryId) {
         this.categoryRepository.findById(categoryId)
                 .orElseThrow(() -> new NotFoundException("CATEGORY_NOT_FOUND", "카테고리를 찾을 수 없습니다."));
 
