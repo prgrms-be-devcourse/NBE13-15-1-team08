@@ -1,10 +1,12 @@
 spring:
   application:
     name: NBE13-15-1-team08
+  profiles:
+    default: local
   datasource:
-    url: jdbc:mysql://127.0.0.1:3306/kdt-team08?allowPublicKeyRetrieval=true&sslMode=DISABLED&serverTimezone=Asia/Seoul&characterEncoding=UTF-8
-    username: root
-    password: kdtpass
+    url: ${DB_URL:jdbc:mysql://127.0.0.1:3306/kdt-team08?allowPublicKeyRetrieval=true&sslMode=DISABLED&serverTimezone=Asia/Seoul&characterEncoding=UTF-8}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
   jpa:
     hibernate:
       ddl-auto: none
