@@ -32,6 +32,10 @@ public class MenuService {
         this.orderRepository = orderRepository;
     }
 
+    /**
+     * 전체 메뉴 목록 — 조회가 잦아 Redis(menus/'all')에 캐시함.
+     * TTL: application.yaml spring.cache.redis.time-to-live(60s).
+     */
     @Cacheable(value = "menus", key = "'all'")
     public List<MenuResponse> getMenus(){
         return menuRepository.findAll(Sort.by("menuId"))  // 명세서상 메뉴 아이디 정렬
@@ -49,6 +53,7 @@ public class MenuService {
                 .orElseThrow(() -> new NotFoundException("MENU_NOT_FOUND","해당하는 메뉴가 없습니다."));
     }
 
+    // 메뉴 변경 시 목록 캐시 제거. 다음 getMenus()는 DB를 다시 읽음
     @Transactional
     @CacheEvict(cacheNames = "menus", key = "'all'")
     public MenuResponse createMenu(MenuRequest request){

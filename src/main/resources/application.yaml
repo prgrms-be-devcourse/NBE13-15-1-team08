@@ -20,6 +20,7 @@ spring:
     redis:
       host: 127.0.0.1
       port: 6379
+  # 메뉴 전체 목록 캐시(menus). 변경 API에서 @CacheEvict. 미갱신 시 최대 60초 후 만료됨
   cache:
     type: redis
     cache-names: menus

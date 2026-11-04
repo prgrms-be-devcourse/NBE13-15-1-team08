@@ -19,7 +19,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * API 예외를 ErrorResponse(code, message, fieldErrors)로 변환하는 공통 처리.
+ * API 예외 → 공통 응답 {@link ErrorResponse}(code, message, fieldErrors)로 변환함.
+ * 클라이언트가 같은 JSON 구조로 파싱하도록 맞춤.
  */
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -33,7 +34,7 @@ public class GlobalExceptionHandler {
 
     /**
      * RestClient 외부 조회 실패 처리.
-     * 502 OUTSIDE_API_FAILED / 504 OUTSIDE_API_TIMEOUT — fieldErrors는 빈 객체.
+     * 502 OUTSIDE_API_FAILED / 504 OUTSIDE_API_TIMEOUT — fieldErrors 빈 객체.
      */
     @ExceptionHandler(OutsideApiException.class)
     public ResponseEntity<ErrorResponse> handleOutsideApi(OutsideApiException e) {
@@ -62,7 +63,7 @@ public class GlobalExceptionHandler {
                 .body(new ErrorResponse("CATEGORY_IN_USE", e.getMessage(), Map.of()));
     }
 
-    // 400 - 서비스에서 던진 검증 오류
+    // 400 - 서비스 검증 오류 (field 있으면 fieldErrors에 넣고, 없으면 빈 객체)
     @ExceptionHandler(ValidationException.class)
     public ResponseEntity<ErrorResponse> handleValidation(ValidationException e) {
         Map<String, String> fieldErrors = e.getField() == null || e.getFieldMessage() == null

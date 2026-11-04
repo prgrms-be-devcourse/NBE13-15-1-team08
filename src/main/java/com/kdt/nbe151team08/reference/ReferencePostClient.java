@@ -33,7 +33,7 @@ public class ReferencePostClient {
 
     /**
      * RestClient 생성.
-     * connect-timeout / read-timeout 설정을 HttpClient·RequestFactory에 반영합니다.
+     * connect-timeout / read-timeout을 HttpClient·RequestFactory에 반영함.
      */
     public ReferencePostClient(
             @Value("${reference.base-url}") String baseUrl,
@@ -54,7 +54,7 @@ public class ReferencePostClient {
 
     /**
      * 외부 게시글 1건 조회.
-     * 응답 JSON을 {@link ReferencePostResponse}로 변환하며, 고정값을 쓰지 않습니다.
+     * 응답 JSON → {@link ReferencePostResponse} 변환. 고정값 사용 안 함.
      */
     public ReferencePostResponse getPost(int postId) {
         try {
@@ -62,11 +62,11 @@ public class ReferencePostClient {
                     .uri("/posts/{postId}", postId)
                     .accept(MediaType.APPLICATION_JSON)
                     .retrieve()
-                    // 외부 404
+                    // 외부 404 → 우리 API 404. 외부 상태코드 그대로 노출하지 않음(없음만 구분)
                     .onStatus(status -> status.value() == 404, (req, res) -> {
                         throw new NotFoundException("REFERENCE_POST_NOT_FOUND", "외부 게시글을 찾을 수 없습니다.");
                     })
-                    // 외부 5xx 등 오류 상태
+                    // 외부 5xx 등 → 502로 통일. 클라이언트가 외부 상태를 직접 해석하지 않음
                     .onStatus(HttpStatusCode::isError, (req, res) -> {
                         throw OutsideApiException.failed();
                     })
@@ -74,12 +74,15 @@ public class ReferencePostClient {
         } catch (NotFoundException | OutsideApiException e) {
             throw e;
         } catch (ResourceAccessException e) {
-            // 네트워크 단 실패: 시간 초과면 504, 그 외(연결 거절·도메인 오류 등)는 502
+            // 네트워크 실패: 타임아웃(504) / 연결 거절·DNS 등(502) 구분함
             throw isTimeout(e) ? OutsideApiException.timeout() : OutsideApiException.failed();
         }
     }
 
-    /** 예외 원인에 Timeout이 포함되면 읽기/연결 시간 초과로 판단합니다. */
+    /**
+     * 원인 체인에 Timeout 있으면 504, 없으면 502로 판단함.
+     * JDK HttpClient 연결/읽기 초과 예외가 달라 메시지·클래스명으로 판별함.
+     */
     private boolean isTimeout(Throwable error) {
         for (Throwable t = error; t != null; t = t.getCause()) {
             String name = t.getClass().getSimpleName();
