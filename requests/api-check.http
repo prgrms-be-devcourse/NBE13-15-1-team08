@@ -1,0 +1,400 @@
+### =========================================================
+### requests/api-check.http
+### 정상 A01~A24 각 1개 + 오류 6개(400×2 / 404×1 / 409×3)
+###
+### [준비 데이터] console.sql seed 기준
+###   category: 1=싱글오리진, 2=블렌드
+###   menu: 1~4 (categoryId=1), available=true
+###   orders: buyer@example.com 등 (orderId·shippingDate는 DB 확인 후 변수 수정)
+###
+### [실행 순서]
+###   1) 앱 기동 → 변수(@baseUrl, ID)를 실제 값으로 맞춤
+###   2) 정상 A01→A24 위에서 아래 순 (파괴적: A05·A10·A16은 주석대로 ID 교체)
+###   3) 오류 E01~E06은 정상과 별도. 같은 검사 조건·입력값만 바꾼 요청은 중복 금지
+### =========================================================
+
+@baseUrl = http://localhost:8080
+@categoryId = 1
+@menuId = 1
+@orderId = 1
+@cancellableOrderId = 2
+@deletableMenuId = 5
+@deletableCategoryId = 3
+@email = buyer@example.com
+@statsDate = 2026-10-28
+@shippingDate = 2026-10-28
+
+### ========== 정상 A01~A24 ==========
+
+###
+### A01 카테고리 목록
+### 실행 순서: 1 (조회만)
+### 준비 데이터: 카테고리 ≥1
+### 기대 상태: 200
+### 비교할 응답 값: 배열 · 각 원소 id, name · id 오름차순
+###
+GET {{baseUrl}}/api/v1/categories
+Accept: application/json
+
+###
+### A02 카테고리 상세
+### 실행 순서: 2
+### 준비 데이터: @categoryId 존재
+### 기대 상태: 200
+### 비교할 응답 값: id==@categoryId · name
+###
+GET {{baseUrl}}/api/v1/categories/{{categoryId}}
+Accept: application/json
+
+###
+### A03 카테고리 등록
+### 실행 순서: 3 (응답 id를 @deletableCategoryId에 넣어 A05에 사용 가능)
+### 준비 데이터: DB에 없는 name
+### 기대 상태: 201
+### 비교할 응답 값: id(발급) · name=="디카페인"
+###
+POST {{baseUrl}}/api/v1/categories
+Content-Type: application/json
+Accept: application/json
+
+{
+  "name": "디카페인"
+}
+
+###
+### A04 카테고리 수정
+### 실행 순서: 4
+### 준비 데이터: @categoryId 존재 · 다른 카테고리와 중복되지 않는 name(여기선 원복)
+### 기대 상태: 200
+### 비교할 응답 값: id==@categoryId · name=="싱글오리진"
+###
+PUT {{baseUrl}}/api/v1/categories/{{categoryId}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "name": "싱글오리진"
+}
+
+###
+### A05 카테고리 삭제
+### 실행 순서: 5 (메뉴 없는 카테고리만 — A03에서 만든 id를 @deletableCategoryId에 넣을 것)
+### 준비 데이터: 소속 메뉴 0개인 category
+### 기대 상태: 204
+### 비교할 응답 값: 본문 없음(empty)
+###
+DELETE {{baseUrl}}/api/v1/categories/{{deletableCategoryId}}
+Accept: application/json
+
+###
+### A06 메뉴 전체 목록
+### 실행 순서: 6
+### 준비 데이터: 메뉴 ≥1 (판매중지 포함 가능)
+### 기대 상태: 200
+### 비교할 응답 값: Menu[] · id,categoryId,name,price,description,available · id 오름차순
+###
+GET {{baseUrl}}/api/v1/menus
+Accept: application/json
+
+###
+### A07 메뉴 상세
+### 실행 순서: 7
+### 준비 데이터: @menuId 존재
+### 기대 상태: 200
+### 비교할 응답 값: id==@menuId · categoryId,name,price,description,available
+###
+GET {{baseUrl}}/api/v1/menus/{{menuId}}
+Accept: application/json
+
+###
+### A08 메뉴 등록
+### 실행 순서: 8 (응답 id → @deletableMenuId, A10에서 삭제)
+### 준비 데이터: 존재하는 categoryId
+### 기대 상태: 201
+### 비교할 응답 값: available==true · name,price,description,categoryId 요청값 반영
+###
+POST {{baseUrl}}/api/v1/menus
+Content-Type: application/json
+Accept: application/json
+
+{
+  "categoryId": {{categoryId}},
+  "name": "Kenya AA",
+  "price": 8000,
+  "description": "케냐 AA 원두 패키지"
+}
+
+###
+### A09 메뉴 일반 수정
+### 실행 순서: 9
+### 준비 데이터: @menuId 존재
+### 기대 상태: 200
+### 비교할 응답 값: categoryId,name,price,description 반영 · available은 기존값 유지
+###
+PUT {{baseUrl}}/api/v1/menus/{{menuId}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "categoryId": {{categoryId}},
+  "name": "Columbia Nariñó",
+  "price": 5000,
+  "description": "콜롬비아 나리뇨 원두를 담은 커피빈 패키지입니다."
+}
+
+###
+### A10 메뉴 삭제
+### 실행 순서: 10 (주문에 안 쓰인 메뉴 — A08 생성분)
+### 준비 데이터: 주문 이력 없는 menuId
+### 기대 상태: 204
+### 비교할 응답 값: 본문 없음(empty)
+###
+DELETE {{baseUrl}}/api/v1/menus/{{deletableMenuId}}
+Accept: application/json
+
+###
+### A11 주문 접수
+### 실행 순서: 11
+### 준비 데이터: available=true 인 @menuId
+### 기대 상태: 201
+### 비교할 응답 값: status=="PLACED" · totalAmount · items[].menuId/quantity · shippingDate · email
+###
+POST {{baseUrl}}/api/v1/orders
+Content-Type: application/json
+Accept: application/json
+
+{
+  "email": "http-check@example.com",
+  "address": "서울시 실습로 10 101호",
+  "postcode": "01234",
+  "items": [
+    { "menuId": {{menuId}}, "quantity": 1 }
+  ]
+}
+
+###
+### A12 이메일별 주문 목록
+### 실행 순서: 12
+### 준비 데이터: @email 주문 ≥1
+### 기대 상태: 200
+### 비교할 응답 값: OrderSummary[] · id,createdAt,shippingDate,totalAmount,status · 최신순
+###
+GET {{baseUrl}}/api/v1/orders?email={{email}}
+Accept: application/json
+
+###
+### A13 주문 상세
+### 실행 순서: 13
+### 준비 데이터: @orderId 존재
+### 기대 상태: 200
+### 비교할 응답 값: id · email · items · status · shippingDate · totalAmount · memo
+###
+GET {{baseUrl}}/api/v1/orders/{{orderId}}
+Accept: application/json
+
+###
+### A14 배송 묶음
+### 실행 순서: 14
+### 준비 데이터: @shippingDate 에 PLACED 주문
+### 기대 상태: 200
+### 비교할 응답 값: DeliveryBatch[] · shippingDate,email,address,postcode,items
+###
+GET {{baseUrl}}/api/v1/delivery-batches?shippingDate={{shippingDate}}
+Accept: application/json
+
+###
+### A15 카테고리별 메뉴
+### 실행 순서: 15
+### 준비 데이터: @categoryId 존재 (메뉴 0개면 [])
+### 기대 상태: 200
+### 비교할 응답 값: Menu[] · id 오름차순 / 없으면 []
+###
+GET {{baseUrl}}/api/v1/categories/{{categoryId}}/menus
+Accept: application/json
+
+###
+### A16 주문 취소
+### 실행 순서: 16
+### 준비 데이터: PLACED · 배송 대상일 14시 전인 @cancellableOrderId
+### 기대 상태: 200
+### 비교할 응답 값: status=="CANCELLED" · cancelledAt != null
+###
+POST {{baseUrl}}/api/v1/orders/{{cancellableOrderId}}/cancel
+Accept: application/json
+
+###
+### A17 접수일별 주문 통계
+### 실행 순서: 17
+### 준비 데이터: @statsDate (시드 2026-10-28)
+### 기대 상태: 200
+### 비교할 응답 값: date · orderCount 등 통계 숫자 필드
+###
+GET {{baseUrl}}/api/v1/statistics/orders?date={{statsDate}}
+Accept: application/json
+
+###
+### A18 접수일별 메뉴 통계
+### 실행 순서: 18
+### 준비 데이터: @statsDate
+### 기대 상태: 200
+### 비교할 응답 값: MenuStatistics[] · menuId 등
+###
+GET {{baseUrl}}/api/v1/statistics/menus?date={{statsDate}}
+Accept: application/json
+
+###
+### A19 판매 중 메뉴 목록
+### 실행 순서: 19
+### 준비 데이터: available=true 메뉴 ≥0
+### 기대 상태: 200
+### 비교할 응답 값: 모두 available==true · id 오름차순
+###
+GET {{baseUrl}}/api/v1/menus/available
+Accept: application/json
+
+###
+### A20 메뉴명 검색
+### 실행 순서: 20
+### 준비 데이터: keyword 부분일치 (대소문자 구분)
+### 기대 상태: 200
+### 비교할 응답 값: Menu[] name에 "Columbia" 포함 / 없으면 []
+###
+GET {{baseUrl}}/api/v1/menus/search?keyword=Columbia
+Accept: application/json
+
+###
+### A21 메뉴 판매 상태 변경
+### 실행 순서: 21
+### 준비 데이터: @menuId 존재
+### 기대 상태: 200
+### 비교할 응답 값: available==true(요청값) · name/price 등 나머지 유지
+###
+PUT {{baseUrl}}/api/v1/menus/{{menuId}}/availability
+Content-Type: application/json
+Accept: application/json
+
+{
+  "available": true
+}
+
+###
+### A22 주문 메모 수정
+### 실행 순서: 22
+### 준비 데이터: PLACED인 @orderId
+### 기대 상태: 200
+### 비교할 응답 값: memo=="문 앞에 놓아주세요"
+###
+PUT {{baseUrl}}/api/v1/orders/{{orderId}}/memo
+Content-Type: application/json
+Accept: application/json
+
+{
+  "memo": "문 앞에 놓아주세요"
+}
+
+###
+### A23 재주문
+### 실행 순서: 23
+### 준비 데이터: 원주문 @orderId · 메뉴 판매중
+### 기대 상태: 201
+### 비교할 응답 값: 새 id · email/address/items.quantity 동일 · status=="PLACED"
+###
+POST {{baseUrl}}/api/v1/orders/{{orderId}}/reorder
+Accept: application/json
+
+###
+### A24 접수일별 고객 통계
+### 실행 순서: 24
+### 준비 데이터: @statsDate
+### 기대 상태: 200
+### 비교할 응답 값: CustomerStatistics[] · email 대소문자 구분
+###
+GET {{baseUrl}}/api/v1/statistics/customers?date={{statsDate}}
+Accept: application/json
+
+
+### ========== 오류 6개 (400×2 / 404×1 / 409×3) ==========
+### 같은 검사 조건에서 입력값만 바꾼 요청은 한 사례로만 인정
+
+###
+### E01 입력 오류 (400) — 카테고리명 형식 규칙
+### 실행 순서: 오류-1
+### 준비 데이터: name 공백만 (다른 길이 오류는 같은 조건이라 별도 작성하지 않음)
+### 기대 상태: 400
+### 비교할 응답 값: code=="VALIDATION_ERROR" · fieldErrors.name 존재
+###
+POST {{baseUrl}}/api/v1/categories
+Content-Type: application/json
+Accept: application/json
+
+{
+  "name": "   "
+}
+
+###
+### E02 입력 오류 (400) — 메뉴 검색어 규칙 (E01과 다른 규칙)
+### 실행 순서: 오류-2
+### 준비 데이터: keyword 빈 문자열
+### 기대 상태: 400
+### 비교할 응답 값: code=="VALIDATION_ERROR" · fieldErrors.keyword 존재
+###
+GET {{baseUrl}}/api/v1/menus/search?keyword=
+Accept: application/json
+
+###
+### E03 대상 없음 (404) — 카테고리
+### 실행 순서: 오류-3
+### 준비 데이터: 없는 categoryId=999999
+### 기대 상태: 404
+### 비교할 응답 값: code=="CATEGORY_NOT_FOUND" · message · fieldErrors=={}
+###
+GET {{baseUrl}}/api/v1/categories/999999
+Accept: application/json
+
+###
+### E04 업무 조건 위반 (409) — 카테고리 이름 중복
+### 실행 순서: 오류-4
+### 준비 데이터: 이미 있는 name "싱글오리진"
+### 기대 상태: 409
+### 비교할 응답 값: code=="CATEGORY_NAME_DUPLICATED" · message · fieldErrors=={}
+###
+POST {{baseUrl}}/api/v1/categories
+Content-Type: application/json
+Accept: application/json
+
+{
+  "name": "싱글오리진"
+}
+
+###
+### E05 업무 조건 위반 (409) — 메뉴 있는 카테고리 삭제
+### 실행 순서: 오류-5
+### 준비 데이터: @categoryId=1 (소속 메뉴 있음)
+### 기대 상태: 409
+### 비교할 응답 값: code=="CATEGORY_IN_USE" · message · fieldErrors=={}
+###
+DELETE {{baseUrl}}/api/v1/categories/{{categoryId}}
+Accept: application/json
+
+###
+### E06 업무 조건 위반 (409) — 판매 중지 메뉴로 주문
+### 실행 순서: 오류-6
+### 준비 데이터:
+###   1) PUT {{baseUrl}}/api/v1/menus/{{menuId}}/availability  body: {"available":false}
+###   2) 아래 주문 접수 실행
+###   3) 끝나면 available=true 로 되돌리기
+### 기대 상태: 409
+### 비교할 응답 값: code=="MENU_UNAVAILABLE" · message · fieldErrors=={}
+###
+POST {{baseUrl}}/api/v1/orders
+Content-Type: application/json
+Accept: application/json
+
+{
+  "email": "unavailable-check@example.com",
+  "address": "서울시 실습로 10 101호",
+  "postcode": "01234",
+  "items": [
+    { "menuId": {{menuId}}, "quantity": 1 }
+  ]
+}
