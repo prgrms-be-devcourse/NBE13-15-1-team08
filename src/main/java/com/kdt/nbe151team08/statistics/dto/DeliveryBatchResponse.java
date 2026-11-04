@@ -24,10 +24,10 @@ public record DeliveryBatchResponse(
         String email,
         String address,
         String postcode,
-        List<Long> orderIds,
-        long orderCount,
-        long totalQuantity,
-        long totalAmount,
+        List<Integer> orderIds,
+        int orderCount,
+        int totalQuantity,
+        int totalAmount,
         List<DeliveryBatchItemResponse> items
 ) {
 }
