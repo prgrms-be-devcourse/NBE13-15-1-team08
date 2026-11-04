@@ -31,6 +31,7 @@ public class OrderService {
     public List<OrderDto.Summary> findByEmail(String email) {
         if (email == null || email.isBlank()) {
             throw new ValidationException("이메일은 필수입니다.");
+            //throw new ValidationException("VALIDATION_ERROR", "입력값을 확인해 주세요.");
         }
         return orderRepository.findByEmailOrderByCreatedAtDesc(email.trim()).stream()
                 .map(OrderDto.Summary::from)
@@ -48,11 +49,13 @@ public class OrderService {
 
         if (request.email() == null || request.email().isBlank()) {
             throw new ValidationException("이메일은 필수입니다.");
+            //throw new ValidationException("VALIDATION_ERROR", "입력값을 확인해 주세요.");
         }
         emailCeck(request.email());
         if (request.items() == null || request.items().isEmpty()) {
             //throw new ValidationException("주문 항목이 비어 있습니다.");
             throw new NotFoundException("MENU_NOT_FOUND", "메뉴를 찾을 수 없습니다."); //예외 수정  400 VALIDATION_ERROR 입력값을 확인해 주세요.
+            //throw new ValidationException("VALIDATION_ERROR", "입력값을 확인해 주세요.");
         }
 
         /*request.address() = placeClear(request.address());
@@ -65,9 +68,11 @@ public class OrderService {
         for (OrderDto.ItemRequest itemRequest : request.items()) {
             if (itemRequest.menuId() == null) {
                 throw new ValidationException("메뉴 ID는 필수입니다.");
+                //throw new ValidationException("VALIDATION_ERROR", "입력값을 확인해 주세요.");
             }
             if (itemRequest.quantity() == null || itemRequest.quantity() <= 0) {
                 throw new ValidationException("수량은 1 이상이어야 합니다.");
+                //throw new ValidationException("VALIDATION_ERROR", "입력값을 확인해 주세요.");
             }
             order.addItem(createItem(itemRequest.menuId(), itemRequest.quantity()));
         }
@@ -125,7 +130,8 @@ public class OrderService {
     private OrderItem createItem(Integer menuId, int quantity) {
         MenuResponse menu = menuService.getMenu(menuId);
         if (!menu.available()) {
-            throw new ValidationException("판매 중이 아닌 메뉴입니다: ");
+            //throw new ValidationException("판매 중이 아닌 메뉴입니다: ");
+            throw new ConflictException("MENU_UNAVAILABLE", "판매 중지된 메뉴가 포함되어 있습니다.");
         }
         return new OrderItem(menu.id(), menu.name(), menu.price(), quantity);
     }
@@ -141,12 +147,15 @@ public class OrderService {
     private void validateShippingAddress(String address, String postcode) {
         if (address == null || address.isBlank()) {
             throw new ValidationException("배송 주소는 필수입니다.");
+            //throw new ValidationException("VALIDATION_ERROR", "입력값을 확인해 주세요.");
         }
         if (address.length() > 200) {
             throw new ValidationException("배송 주소는 200자 이하여야 합니다.");
+            //throw new ValidationException("VALIDATION_ERROR", "입력값을 확인해 주세요.");
         }
         if (postcode == null || !postcode.matches("^[0-9]{5}$")) {
             throw new ValidationException("우편번호는 숫자 5자리여야 합니다.");
+            //throw new ValidationException("VALIDATION_ERROR", "입력값을 확인해 주세요.");
         }
     }
 
@@ -156,6 +165,7 @@ public class OrderService {
                 && email.length() >= 1 && email.length() <= 100
                 && email.matches("^[A-Za-z0-9._%+-]+@[A-Za-z0-9-]+(?:\\.[A-Za-z0-9-]+)+$"))){
             throw new ValidationException("이메일은 필수입니다.");   //400 VALIDATION_ERROR 입력값을 확인해 주세요.
+            //throw new ValidationException("VALIDATION_ERROR", "입력값을 확인해 주세요.");
         }
     }
 
