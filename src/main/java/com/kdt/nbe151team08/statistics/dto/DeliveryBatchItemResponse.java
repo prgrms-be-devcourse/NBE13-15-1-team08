@@ -20,10 +20,10 @@ package com.kdt.nbe151team08.statistics.dto;
 //        ]
 
 public record DeliveryBatchItemResponse(
-        long menuId,
+        int menuId,
         String menuName,
         int unitPrice,
-        long quantity,
-        long lineAmount
+        int quantity,
+        int lineAmount
 ) {
 }
