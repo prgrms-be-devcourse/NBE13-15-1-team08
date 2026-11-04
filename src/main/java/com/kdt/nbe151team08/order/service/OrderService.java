@@ -13,6 +13,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -72,7 +74,10 @@ public class OrderService {
     @Transactional
     public OrderDto.Response cancel(Integer id) {
         Order order = getOrder(id);
-        order.cancel();
+        LocalDateTime dt1 = order.getShippingDate().atTime(14, 0);
+        if(dt1.isAfter(LocalDateTime.now()) ) {
+            order.cancel();
+        }
         return OrderDto.Response.from(order);
     }
 
@@ -113,5 +118,12 @@ public class OrderService {
     private Order getOrder(Integer id) {
         return orderRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("ORDER_NOT_FOUND", "주문을 찾을 수 없습니다."));
+    }
+
+    //이메일을 정규식에 검증
+    private boolean emailCeck(String email) {
+        return email != null
+                && email.length() >= 1 && email.length() <= 100
+                && email.matches("^[A-Za-z0-9._%+-]+@[A-Za-z0-9-]+(?:\\.[A-Za-z0-9-]+)+$");
     }
 }

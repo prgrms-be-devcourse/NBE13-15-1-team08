@@ -6,6 +6,7 @@ import com.kdt.nbe151team08.statistics.dto.DeliveryBatchResponse;
 import com.kdt.nbe151team08.statistics.dto.MenuStatisticsResponse;
 import com.kdt.nbe151team08.statistics.dto.OrderStatisticsResponse;
 import com.kdt.nbe151team08.statistics.service.StatisticsService;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -16,6 +17,10 @@ import java.util.List;
 
 // 통계 Controller
 
+@CrossOrigin(origins = {
+        "http://localhost:5500",
+        "http://127.0.0.1:5500"
+})
 @RestController
 public class StatisticsController {
 
