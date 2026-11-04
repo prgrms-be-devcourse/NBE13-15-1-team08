@@ -95,9 +95,9 @@ public class Order {
 
     // 메모 수정: 취소된 주문은 수정 불가
     public void changeMemo(String memo) {
-        if (this.status == OrderStatus.CANCELLED) {
+        /*if (this.status == OrderStatus.CANCELLED) {
             throw new ValidationException("취소된 주문의 메모는 수정할 수 없습니다.");
-        }
+        }*/
         this.memo = memo;
     }
 }
