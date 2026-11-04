@@ -108,10 +108,9 @@ public class StatisticsService {
             List<Order> myOrders = ordersOf(orders, email);
 
             // 주문 번호 목록 (이미 번호 순으로 가져왔으니 순서대로 담기만 하면 된다)
-            List<Long> orderIds = new ArrayList<>();
+            List<Integer> orderIds = new ArrayList<>();
             for (Order order : myOrders) {
-                // Order의 id는 Integer라서 응답 형식(Long)으로 바꿔 담는다
-                orderIds.add(order.getId().longValue());
+                orderIds.add(order.getId());
             }
 
             // 메뉴 항목: sumItems로 메뉴별로 합친 뒤, 배송 묶음용 DTO로 옮겨 담는다
@@ -126,8 +125,8 @@ public class StatisticsService {
             }
 
             // 묶음 전체 합계 = 위에서 만든 메뉴 항목들을 다 더한 값
-            long totalQuantity = 0;
-            long totalAmount = 0;
+            int totalQuantity = 0;
+            int totalAmount = 0;
             for (DeliveryBatchItemResponse item : items) {
                 totalQuantity += item.quantity();
                 totalAmount += item.lineAmount();
@@ -168,11 +167,11 @@ public class StatisticsService {
     // 건수(orderCount) : 취소 포함 전체
     // 수량·금액 : PLACED 주문만 (명세서 규칙)
     private OrderStatisticsResponse summarize(LocalDate date, List<Order> orders) {
-        long orderCount = orders.size();   // 목록에 든 주문 개수 = 전체 건수
-        long placedOrderCount = 0;
-        long cancelledOrderCount = 0;
-        long totalQuantity = 0;
-        long totalAmount = 0;
+        int orderCount = orders.size();   // 목록에 든 주문 개수 = 전체 건수
+        int placedOrderCount = 0;
+        int cancelledOrderCount = 0;
+        int totalQuantity = 0;
+        int totalAmount = 0;
 
         for (Order order : orders) {
             if (order.getStatus() == OrderStatus.PLACED) {
@@ -252,7 +251,7 @@ public class StatisticsService {
         // 메뉴 ID가 다르면 ID로, 같으면 단가로, 그것도 같으면 이름으로 비교
         result.sort((a, b) -> {
             if (a.menuId() != b.menuId()) {
-                return Long.compare(a.menuId(), b.menuId());
+                return Integer.compare(a.menuId(), b.menuId());
             }
             if (a.unitPrice() != b.unitPrice()) {
                 return Integer.compare(a.unitPrice(), b.unitPrice());
