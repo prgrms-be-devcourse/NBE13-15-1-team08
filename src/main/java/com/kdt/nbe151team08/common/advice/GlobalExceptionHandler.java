@@ -79,14 +79,32 @@ public class GlobalExceptionHandler {
                 .body(new ErrorResponse("VALIDATION_ERROR", "입력값을 확인해 주세요.", errors));
     }
 
-    // 400 - JSON 문법/타입 오류 등 (필드 지정 어려우면 {})
-    @ExceptionHandler({
-            HttpMessageNotReadableException.class,
-            MethodArgumentTypeMismatchException.class
-    })
-    public ResponseEntity<ErrorResponse> handleBadRequest(Exception e) {
-        return ResponseEntity.badRequest()
-                .body(new ErrorResponse("VALIDATION_ERROR", "입력값을 확인해 주세요.", Map.of()));
+    // JSON 문법이나 형식 오류
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<ErrorResponse> handleBadJson(
+            HttpMessageNotReadableException e) {
+
+        return ResponseEntity.badRequest().body(
+                new ErrorResponse(
+                        "VALIDATION_ERROR",
+                        "입력값을 확인해 주세요.",
+                        Map.of()
+                )
+        );
+    }
+
+    // page=abc, size=abc 등 정수 변환 오류
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<ErrorResponse> handleTypeMismatch(
+            MethodArgumentTypeMismatchException e) {
+
+        return ResponseEntity.badRequest().body(
+                new ErrorResponse(
+                        "VALIDATION_ERROR",
+                        "입력값을 확인해 주세요.",
+                        Map.of(e.getName(), "올바른 정수를 입력해 주세요.")
+                )
+        );
     }
 
     @ExceptionHandler(IllegalArgumentException.class)

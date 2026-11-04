@@ -31,4 +31,11 @@ public interface MenuRepository extends JpaRepository<Menu, Integer> {
         """, nativeQuery = true)
     List<Menu> searchByKeyword(@Param("keyword") String keyword);
 
+    // order_item에서 메뉴Id 검색
+    @Query(value = """
+    SELECT EXISTS(
+        SELECT 1 FROM order_item WHERE menu_id = :menuId
+    )
+    """, nativeQuery = true)
+    long existsInOrderItemByMenuId(@Param("menuId") Integer menuId);
 }
