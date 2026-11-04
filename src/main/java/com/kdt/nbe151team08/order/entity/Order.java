@@ -57,8 +57,12 @@ public class Order {
         this.postcode = postcode;
         this.createdAt = LocalDateTime.now();  // 접수 시각 = 현재 시간
         this.cancelledAt = null;               // 취소 전이므로 null
-        this.shippingDate = null;              // 배송일은 아직 정해지지 않음
-        this.memo = null;                      // 접수 시 메모 없음
+        //this.shippingDate = null;              // 배송일은 아직 정해지지 않음
+        //시간이 14시 이후면 내일 13시59분 이전이면 오늘로 날짜 입력
+        this.shippingDate = this.createdAt.getHour() >= 14
+                ? this.createdAt.toLocalDate().plusDays(1)  // 14:00 이후는 내일
+                : this.createdAt.toLocalDate();             // 13:59 이전은 오늘
+        this.memo = "";                      // 접수 시 메모 없음
         this.status = OrderStatus.PLACED;      // 접수 상태
         this.totalAmount = 0;                  // 아래 calculateTotalAmount()에서 계산
     }
@@ -74,6 +78,10 @@ public class Order {
         // TODO: 총액 계산 구현
         //  - items의 각 OrderItem의 lineAmount(단가 * 수량)를 모두 더해서
         //  - this.totalAmount에 저장
+
+        for(OrderItem item :  items){
+            totalAmount += item.getLineAmount();
+        }
     }
 
     // 주문 취소

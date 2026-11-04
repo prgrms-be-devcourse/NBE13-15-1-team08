@@ -18,10 +18,10 @@ package com.kdt.nbe151team08.statistics.dto;
 //        }
 
 public record MenuStatisticsResponse(
-        long menuId,
+        int menuId,
         String menuName,
         int unitPrice,
-        long totalQuantity,
-        long totalAmount
+        int totalQuantity,
+        int totalAmount
 ) {
 }
