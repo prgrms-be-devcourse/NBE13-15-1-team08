@@ -10,7 +10,7 @@ import java.util.List;
 
 public interface OrderRepository extends JpaRepository<Order, Integer> {
 
-    @Query(value = "SELECT * FROM orders WHERE email = BINARY :email ORDER BY created_at DESC",
+    @Query(value = "SELECT * FROM orders WHERE email = BINARY :email ORDER BY created_at DESC, id DESC",
             nativeQuery = true)
     List<Order> findByEmailOrderByCreatedAtDesc(@Param("email") String email);
 }

@@ -6,6 +6,7 @@ import com.kdt.nbe151team08.common.exception.ConflictException;
 import com.kdt.nbe151team08.common.exception.ErrorResponse;
 import com.kdt.nbe151team08.common.exception.NotFoundException;
 import com.kdt.nbe151team08.common.exception.ValidationException;
+import com.kdt.nbe151team08.reference.OutsideApiException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -27,6 +28,16 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(NotFoundException.class)
     public ResponseEntity<ErrorResponse> handleNotFound(NotFoundException e) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(new ErrorResponse(e.getCode(), e.getMessage(), Map.of()));
+    }
+
+    /**
+     * RestClient 외부 조회 실패 처리.
+     * 502 OUTSIDE_API_FAILED / 504 OUTSIDE_API_TIMEOUT — fieldErrors는 빈 객체.
+     */
+    @ExceptionHandler(OutsideApiException.class)
+    public ResponseEntity<ErrorResponse> handleOutsideApi(OutsideApiException e) {
+        return ResponseEntity.status(e.getStatus())
                 .body(new ErrorResponse(e.getCode(), e.getMessage(), Map.of()));
     }
 

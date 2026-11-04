@@ -16,17 +16,24 @@ spring:
         format_sql: true
         highlight_sql: true
         use_sql_comments: true
+  data:
+    redis:
+      host: 127.0.0.1
+      port: 6379
+  cache:
+    type: redis
+    cache-names: menus
+    redis:
+      time-to-live: 60s
 
 server:
   port: 8080
-  
-data:
-  redis:
-     host: 127.0.0.1
-     port: 6379
 
-cache:
-  type: redis
-  cache-names: menus
-  redis:
-    time-to-live: 60s
+# RestClient 외부 게시글 조회 (GET /api/v1/reference/posts/{postId})
+# - base-url: 외부 서버 주소 (기본 jsonplaceholder, 테스트 시 Mock 서버로 교체)
+# - connect-timeout: 연결 대기 최대 3초
+# - read-timeout: 응답 읽기 대기 최대 5초
+reference:
+  base-url: ${REFERENCE_BASE_URL:https://jsonplaceholder.typicode.com}
+  connect-timeout: 3s
+  read-timeout: 5s
