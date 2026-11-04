@@ -1,3 +1,24 @@
 spring:
   application:
     name: NBE13-15-1-team01
+
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USERNAME:root}
+    password: ${DB_PASSWORD}
+
+  jpa:
+    hibernate:
+      ddl-auto: none
+    show-sql: false
+
+  data:
+    redis:
+      host: 127.0.0.1
+      port: 6379
+
+  cache:
+    type: redis
+    cache-names: menus
+    redis:
+      time-to-live: 60s

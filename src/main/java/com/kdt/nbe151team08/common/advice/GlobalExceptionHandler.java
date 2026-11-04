@@ -78,4 +78,17 @@ public class GlobalExceptionHandler {
                 )
         );
     }
+
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<ErrorResponse> handleTypeMismatch(
+            MethodArgumentTypeMismatchException e) {
+
+        return ResponseEntity.badRequest().body(
+                new ErrorResponse(
+                        "VALIDATION_ERROR",
+                        "입력값을 확인해 주세요.",
+                        Map.of(e.getName(), "올바른 정수를 입력해 주세요.")
+                )
+        );
+    }
 }

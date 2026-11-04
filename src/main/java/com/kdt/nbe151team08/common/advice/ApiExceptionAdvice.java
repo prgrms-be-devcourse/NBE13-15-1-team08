@@ -3,12 +3,15 @@ package com.kdt.nbe151team08.common.advice;
 import com.kdt.nbe151team08.category.exception.CategoryInUseException;
 import com.kdt.nbe151team08.category.exception.CategoryNameDuplicatedException;
 import com.kdt.nbe151team08.common.exception.ApiError;
+import com.kdt.nbe151team08.common.exception.ErrorResponse;
 import com.kdt.nbe151team08.common.exception.NotFoundException;
 import com.kdt.nbe151team08.common.exception.ValidationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+
+import java.util.Map;
 
 /**
  * 예외를 HTTP 응답으로 변환하는 공통 처리.
@@ -23,11 +26,19 @@ public class ApiExceptionAdvice {
                 .body(new ApiError(ex.getCode(), ex.getMessage()));
     }
 
-    /** ValidationException → 400 · VALIDATION_ERROR */
+    /** ValidationException → 400 · VALIDATION_ERROR Filed 추가버전*/
     @ExceptionHandler(ValidationException.class)
-    public ResponseEntity<ApiError> handleValidation(ValidationException ex) {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(new ApiError("VALIDATION_ERROR", ex.getMessage()));
+    public ResponseEntity<ErrorResponse> handleValidation(ValidationException e){
+
+        Map<String, String> errors = e.getField() == null
+                ? Map.of() :
+                Map.of(e.getField(), e.getMessage());
+        System.out.println("field = " + e.getField());
+        return ResponseEntity.badRequest().body(
+                new ErrorResponse("VALIDATION_ERROR",
+                        "입력값을 확인해 주세요.",
+                        errors)
+        );
     }
 
     /** CategoryNameDuplicatedException → 409 · CATEGORY_NAME_DUPLICATED */
