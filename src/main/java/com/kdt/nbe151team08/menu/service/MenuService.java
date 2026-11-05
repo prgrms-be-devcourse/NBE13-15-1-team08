@@ -46,7 +46,7 @@ public class MenuService {
 
     private Menu findMenu(int id) {
         return menuRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException("MENU_NOT_FOUND","해당하는 메뉴가 없습니다."));
+                .orElseThrow(() -> new NotFoundException("MENU_NOT_FOUND", "메뉴를 찾을 수 없습니다."));
     }
 
     // 메뉴 변경 시 목록 캐시 제거. 다음 getMenus()는 DB를 다시 읽음
@@ -102,7 +102,7 @@ public class MenuService {
     public List<MenuResponse> searchMenus(String keyword) {
         if (keyword == null || keyword.isBlank()
                 || keyword.strip().length() > 100) {
-            throw new ValidationException("검색어는 1~100자여야 합니다.");
+            throw new ValidationException("keyword", "검색어는 1~100자여야 합니다.");
         }
 
         return menuRepository.searchByKeyword(keyword)

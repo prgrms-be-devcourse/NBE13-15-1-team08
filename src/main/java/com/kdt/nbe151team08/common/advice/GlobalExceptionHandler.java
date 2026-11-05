@@ -31,7 +31,7 @@ import java.util.Map;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    /** 404 — 리소스 없음 */
+    /** 404 — 리소스 없음 (명세: 표의 message, fieldErrors={}) */
     @ExceptionHandler(NotFoundException.class)
     public ResponseEntity<ErrorResponse> handleNotFound(NotFoundException e) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
@@ -48,7 +48,7 @@ public class GlobalExceptionHandler {
                 .body(new ErrorResponse(e.getCode(), e.getMessage(), Map.of()));
     }
 
-    /** 409 — 공통 업무 충돌 (CATEGORY_NAME_DUPLICATED, CATEGORY_IN_USE, MENU_IN_USE 등) */
+    /** 409 — 업무 충돌 (명세: 표의 message, fieldErrors={}) */
     @ExceptionHandler(ConflictException.class)
     public ResponseEntity<ErrorResponse> handleConflict(ConflictException e) {
         return ResponseEntity.status(HttpStatus.CONFLICT)
@@ -58,18 +58,21 @@ public class GlobalExceptionHandler {
     /** 400 — 서비스 검증 오류 (field 있으면 fieldErrors에 넣고, 없으면 빈 객체) */
     @ExceptionHandler(ValidationException.class)
     public ResponseEntity<ErrorResponse> handleValidation(ValidationException e) {
-        Map<String, String> fieldErrors = e.getField() == null || e.getFieldMessage() == null
-                ? Map.of()
-                : Map.of(e.getField(), e.getFieldMessage());
-
         return ResponseEntity.badRequest()
                 .body(new ErrorResponse(
                         "VALIDATION_ERROR",
                         e.getMessage() == null || e.getMessage().isBlank()
                                 ? "입력값을 확인해 주세요."
                                 : e.getMessage(),
-                        fieldErrors
+                        fieldErrorsOf(e.getField(), e.getFieldMessage())
                 ));
+    }
+
+    /** ValidationException과 동일하게 fieldErrors 맵 조립 */
+    private static Map<String, String> fieldErrorsOf(String field, String fieldMessage) {
+        return field == null || fieldMessage == null
+                ? Map.of()
+                : Map.of(field, fieldMessage);
     }
 
     /** 400 — DTO @Valid 실패 */

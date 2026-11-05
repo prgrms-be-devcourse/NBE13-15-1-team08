@@ -49,7 +49,7 @@ class ReferencePostControllerTest {
                 .andExpect(jsonPath("$.code").value("VALIDATION_ERROR"));
     }
 
-    /** 대상 없음 404 — REFERENCE_POST_NOT_FOUND, fieldErrors는 {} */
+    /** 대상 없음 404 — REFERENCE_POST_NOT_FOUND · 표 message · fieldErrors={} */
     @Test
     void notFound_404() throws Exception {
         given(this.referencePostClient.getPost(999))
@@ -58,6 +58,7 @@ class ReferencePostControllerTest {
         this.mockMvc.perform(get("/api/v1/reference/posts/999").accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.code").value("REFERENCE_POST_NOT_FOUND"))
+                .andExpect(jsonPath("$.message").value("외부 게시글을 찾을 수 없습니다."))
                 .andExpect(jsonPath("$.fieldErrors").isEmpty());
     }
 

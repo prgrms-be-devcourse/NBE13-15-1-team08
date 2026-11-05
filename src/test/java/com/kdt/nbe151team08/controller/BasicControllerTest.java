@@ -147,7 +147,7 @@ class BasicControllerTest {
         verify(this.categoryService).one(999999);
     }
 
-    /** 업무 위반 — 409 · CATEGORY_NAME_DUPLICATED · message · fieldErrors */
+    /** 업무 위반 — 409 · CATEGORY_NAME_DUPLICATED · message · fieldErrors={} */
     @Test
     void create_duplicated_name_is_409() throws Exception {
         given(this.categoryService.create(any(CategoryRequest.class)))
