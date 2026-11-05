@@ -24,7 +24,7 @@ public record DeliveryBatchResponse(
         String email,
         String address,
         String postcode,
-        List<Integer> orderIds,
+        int[] orderIds,
         int orderCount,
         int totalQuantity,
         int totalAmount,

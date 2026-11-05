@@ -13,7 +13,7 @@ public class OrderItem {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    private int id;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "order_id", nullable = false)
@@ -21,18 +21,18 @@ public class OrderItem {
 
     // Menu 엔티티에 의존하지 않도록 ID 값만 저장 (DB의 menu_id 컬럼)
     @Column(name = "menu_id", nullable = false)
-    private Integer menuId;
+    private int menuId;
 
     @Column(length = 100)
     private String menuName;      // 주문 당시 메뉴 이름 (스냅샷)
 
-    private Integer unitPrice;    // 주문 당시 단가 (스냅샷)
+    private int unitPrice;    // 주문 당시 단가 (스냅샷)
 
-    private Integer quantity;
+    private int quantity;
 
-    private Integer lineAmount;   // unit_price * quantity
+    private int lineAmount;   // unit_price * quantity
 
-    public OrderItem(Integer menuId, String menuName, int unitPrice, int quantity) {
+    public OrderItem(int menuId, String menuName, int unitPrice, int quantity) {
         this.menuId = menuId;
         this.menuName = menuName;
         this.unitPrice = unitPrice;
