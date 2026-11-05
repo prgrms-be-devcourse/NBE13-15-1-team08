@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId; // [수정] 서울 시각용
 import java.util.ArrayList;
 import java.util.List;
 
@@ -55,7 +56,8 @@ public class Order {
         this.email = email;
         this.address = address;
         this.postcode = postcode;
-        this.createdAt = LocalDateTime.now();  // 접수 시각 = 현재 시간
+        // [수정] 접수 시각을 서울 기준으로 기록 (배송일 14시 판정·취소 마감과 동일)
+        this.createdAt = LocalDateTime.now(ZoneId.of("Asia/Seoul"));
         this.cancelledAt = null;               // 취소 전이므로 null
         //this.shippingDate = null;              // 배송일은 아직 정해지지 않음
         //시간이 14시 이후면 내일 13시59분 이전이면 오늘로 날짜 입력
@@ -90,7 +92,8 @@ public class Order {
             throw new ValidationException("이미 취소된 주문입니다.");
         }
         this.status = OrderStatus.CANCELLED;
-        this.cancelledAt = LocalDateTime.now();
+        // [수정] 취소 시각도 서울 기준으로 기록
+        this.cancelledAt = LocalDateTime.now(ZoneId.of("Asia/Seoul"));
     }
 
     // 메모 수정: 취소된 주문은 수정 불가
