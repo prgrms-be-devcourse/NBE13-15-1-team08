@@ -33,7 +33,7 @@ public class MenuController {
     }
 
     @GetMapping("/{menuId}")
-    public MenuResponse getMenu(@PathVariable("menuId") Integer id){
+    public MenuResponse getMenu(@PathVariable("menuId") int id){
         return menuService.getMenu(id);
     }
 
@@ -60,19 +60,19 @@ public class MenuController {
     }
 
     @PutMapping("{menuId}")
-    public MenuResponse updateMenu(@PathVariable("menuId") Integer id,@Valid @RequestBody MenuRequest request ){
+    public MenuResponse updateMenu(@PathVariable("menuId") int id,@Valid @RequestBody MenuRequest request ){
         return menuService.updateMenu(id, request);
     }
 
     @DeleteMapping("/{menuId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteMenu(@PathVariable("menuId") Integer id){
+    public void deleteMenu(@PathVariable("menuId") int id){
         menuService.deleteMenu(id);
     }
 
 
     @PutMapping("{menuId}/availability")
-    public MenuResponse updateAvailability(@PathVariable("menuId") Integer id,@Valid @RequestBody MenuAvailabilityRequest request ){
+    public MenuResponse updateAvailability(@PathVariable("menuId") int id,@Valid @RequestBody MenuAvailabilityRequest request ){
         return menuService.changeAvailability(id, request.available());
     }
 
