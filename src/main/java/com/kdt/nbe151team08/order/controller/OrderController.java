@@ -24,7 +24,7 @@ public class OrderController {
 
     // 주문 상세: GET /api/v1/orders/{orderId} 200
     @GetMapping("/{orderId}")
-    public OrderDto.Response findById(@PathVariable Integer orderId) {
+    public OrderDto.Response findById(@PathVariable int orderId) {
         return orderService.findById(orderId);
     }
 
@@ -37,20 +37,20 @@ public class OrderController {
 
     // 주문 취소: POST /api/v1/orders/{orderId}/cancel 200
     @PostMapping("/{orderId}/cancel")
-    public OrderDto.Response cancel(@PathVariable Integer orderId) {
+    public OrderDto.Response cancel(@PathVariable int orderId) {
         return orderService.cancel(orderId);
     }
 
     // 재주문: POST /api/v1/orders/{orderId}/reorder 201
     @PostMapping("/{orderId}/reorder")
     @ResponseStatus(HttpStatus.CREATED)
-    public OrderDto.Response reorder(@PathVariable Integer orderId) {
+    public OrderDto.Response reorder(@PathVariable int orderId) {
         return orderService.reorder(orderId);
     }
 
     // 주문 메모 수정: PUT /api/v1/orders/{orderId}/memo 200
     @PutMapping("/{orderId}/memo")
-    public OrderDto.Response updateMemo(@PathVariable Integer orderId,
+    public OrderDto.Response updateMemo(@PathVariable int orderId,
                                         @RequestBody OrderDto.MemoUpdateRequest request) {
         return orderService.updateMemo(orderId, request);
     }
