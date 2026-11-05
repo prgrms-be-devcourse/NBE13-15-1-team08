@@ -112,13 +112,19 @@ public class OrderService {
     // 주문 메모 수정
     @Transactional
     public OrderDto.Response updateMemo(int id, OrderDto.MemoUpdateRequest request) {
-        if (request == null || request.memo() == null) {
+        Order order;
+        if (request == null) {
             throw new ValidationException("memo", "메모는 0~200자 문자열이어야 합니다.");
+        }
+        order = getOrder(id);
+        if(request.memo() == null){
+            order.changeMemo("");
+            return OrderDto.Response.from(order);
         }
         if (request.memo().length() > 200) {
             throw new ValidationException("memo", "메모는 0~200자 문자열이어야 합니다.");
         }
-        Order order = getOrder(id);
+
         order.changeMemo(request.memo());
         return OrderDto.Response.from(order);
     }
