@@ -54,8 +54,9 @@ public class MenuService {
     }
 
     // 메뉴 변경 시 목록 캐시 제거. 다음 getMenus()는 DB를 다시 읽음
+    // [A19 캐시 추가] key = "'all'" → allEntries = true : A06(all)뿐 아니라 A19(available) 캐시도 함께 지우기 위해 변경 (아래 4개 메서드 공통)
     @Transactional
-    @CacheEvict(cacheNames = "menus", key = "'all'")
+    @CacheEvict(cacheNames = "menus", allEntries = true)
     public MenuResponse createMenu(MenuRequest request){
         Menu menu = new Menu(
                 request.categoryId(),
@@ -69,7 +70,7 @@ public class MenuService {
     }
 
     @Transactional
-    @CacheEvict(cacheNames = "menus", key = "'all'")
+    @CacheEvict(cacheNames = "menus", allEntries = true)
     public MenuResponse updateMenu(int id, MenuRequest request){
         Menu originMenu = findMenu(id);
         originMenu.update(
@@ -83,7 +84,7 @@ public class MenuService {
     }
 
     @Transactional
-    @CacheEvict(cacheNames = "menus", key = "'all'")
+    @CacheEvict(cacheNames = "menus", allEntries = true)
     public void deleteMenu(int id){
         Menu menu = findMenu(id);
         if (menuRepository.existsInOrderItemByMenuId(id) == 1L){
@@ -94,7 +95,7 @@ public class MenuService {
     }
 
     @Transactional
-    @CacheEvict(cacheNames = "menus", key = "'all'")
+    @CacheEvict(cacheNames = "menus", allEntries = true)
     public MenuResponse changeAvailability(int id, Boolean available){
         Menu originMenu = findMenu(id);
         originMenu.isAvailability(available);
@@ -112,6 +113,8 @@ public class MenuService {
                 .stream().map(MenuResponse::from).toList();
     }
 
+    // [A19 캐시 추가] 판매 중 메뉴 목록을 Redis(menus::available)에 저장, 메뉴 변경 시 @CacheEvict(allEntries)로 함께 지움
+    @Cacheable(value = "menus", key = "'available'")
     public List<MenuResponse> getAvailableMenus() {
         return menuRepository.findByAvailableTrueOrderByMenuIdAsc()
                 .stream().map(MenuResponse::from).toList();
