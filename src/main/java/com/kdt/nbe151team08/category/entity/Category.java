@@ -8,10 +8,11 @@ import lombok.Getter;
 @Getter
 public class Category {
 
+    /** PK. 저장 전 0, 저장 후 DB가 발급. 조회 API에서는 1 미만을 서비스에서 400 처리함. */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "category_id")
-    private Integer categoryId;
+    private int categoryId;
 
     /** 카테고리명. 최대 30자, 중복 불가. */
     @Column(nullable = false, unique = true, length = 30)

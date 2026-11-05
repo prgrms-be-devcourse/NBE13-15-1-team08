@@ -3,7 +3,7 @@ package com.kdt.nbe151team08.controller;
 import com.kdt.nbe151team08.category.controller.CategoryApiController;
 import com.kdt.nbe151team08.category.dto.CategoryRequest;
 import com.kdt.nbe151team08.category.dto.CategoryResponse;
-import com.kdt.nbe151team08.category.exception.CategoryNameDuplicatedException;
+import com.kdt.nbe151team08.common.exception.ConflictException;
 import com.kdt.nbe151team08.category.service.CategoryService;
 import com.kdt.nbe151team08.common.advice.GlobalExceptionHandler;
 import com.kdt.nbe151team08.common.exception.NotFoundException;
@@ -151,7 +151,7 @@ class BasicControllerTest {
     @Test
     void create_duplicated_name_is_409() throws Exception {
         given(this.categoryService.create(any(CategoryRequest.class)))
-                .willThrow(new CategoryNameDuplicatedException("같은 이름의 카테고리가 이미 있습니다."));
+                .willThrow(new ConflictException("CATEGORY_NAME_DUPLICATED", "같은 이름의 카테고리가 이미 있습니다."));
 
         this.mockMvc.perform(post("/api/v1/categories")
                         .contentType(MediaType.APPLICATION_JSON)

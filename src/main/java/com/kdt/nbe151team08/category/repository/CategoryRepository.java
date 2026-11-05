@@ -8,13 +8,17 @@ import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 
+/**
+ * 카테고리 저장소.
+ * 엔티티 PK는 int이지만 JpaRepository 제네릭은 Integer만 가능함(primitive 불가).
+ */
 public interface CategoryRepository extends JpaRepository<Category, Integer> {
 
-    List<Category> findAllByOrderByCategoryIdAsc(); //ID 오름차순 목록 조회
+    List<Category> findAllByOrderByCategoryIdAsc(); // ID 오름차순 목록 조회
 
-    boolean existsByName(String name); //이름 중복 검사
+    boolean existsByName(String name); // 이름 중복 검사
 
-    boolean existsByNameAndCategoryIdNot(String name, int categoryId); //수정 시 자기 자신 제외 이름 중복 검사
+    boolean existsByNameAndCategoryIdNot(String name, int categoryId); // 수정 시 자기 자신 제외 이름 중복 검사
 
     // A15 카테고리별 메뉴 목록
     @Query("SELECT m FROM Menu m WHERE m.categoryId = :categoryId ORDER BY m.menuId ASC")
