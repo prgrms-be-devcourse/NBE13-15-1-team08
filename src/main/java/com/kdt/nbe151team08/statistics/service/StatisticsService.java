@@ -107,10 +107,10 @@ public class StatisticsService {
             // 이 이메일의 주문만
             List<Order> myOrders = ordersOf(orders, email);
 
-            // 주문 번호 목록 (이미 번호 순으로 가져왔으니 순서대로 담기만 하면 된다)
-            List<Integer> orderIds = new ArrayList<>();
-            for (Order order : myOrders) {
-                orderIds.add(order.getId());
+            // 주문 번호 배열 (이미 번호 순으로 가져왔으니 순서대로 담기만 하면 된다)
+            int[] orderIds = new int[myOrders.size()];
+            for (int i = 0; i < myOrders.size(); i++) {
+                orderIds[i] = myOrders.get(i).getId();
             }
 
             // 메뉴 항목: sumItems로 메뉴별로 합친 뒤, 배송 묶음용 DTO로 옮겨 담는다
@@ -142,7 +142,7 @@ public class StatisticsService {
                     first.getAddress(),
                     first.getPostcode(),
                     orderIds,
-                    orderIds.size(),     // 주문 건수 = 주문 번호 개수
+                    orderIds.length,     // 주문 건수 = 주문 번호 개수
                     totalQuantity,
                     totalAmount,
                     items));
