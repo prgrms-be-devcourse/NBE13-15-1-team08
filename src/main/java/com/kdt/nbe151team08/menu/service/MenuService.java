@@ -8,7 +8,6 @@ import com.kdt.nbe151team08.menu.dto.MenuRequest;
 import com.kdt.nbe151team08.menu.dto.MenuResponse;
 import com.kdt.nbe151team08.menu.entity.Menu;
 import com.kdt.nbe151team08.menu.repository.MenuRepository;
-import com.kdt.nbe151team08.order.repository.OrderRepository;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
@@ -18,18 +17,15 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
 public class MenuService {
 
     private final MenuRepository menuRepository;
-    private final OrderRepository orderRepository;
 
-    public MenuService(MenuRepository menuRepository, OrderRepository orderRepository) {
+    public MenuService(MenuRepository menuRepository) {
         this.menuRepository = menuRepository;
-        this.orderRepository = orderRepository;
     }
 
     /**
@@ -53,9 +49,8 @@ public class MenuService {
                 .orElseThrow(() -> new NotFoundException("MENU_NOT_FOUND","해당하는 메뉴가 없습니다."));
     }
 
-    // 메뉴 변경 시 목록 캐시 제거. 다음 getMenus()는 DB를 다시 읽음
     @Transactional
-    @CacheEvict(cacheNames = "menus", key = "'all'")
+    @CacheEvict(cacheNames = "menus", allEntries = true)
     public MenuResponse createMenu(MenuRequest request){
         Menu menu = new Menu(
                 request.categoryId(),
@@ -69,7 +64,7 @@ public class MenuService {
     }
 
     @Transactional
-    @CacheEvict(cacheNames = "menus", key = "'all'")
+    @CacheEvict(cacheNames = "menus", allEntries = true)
     public MenuResponse updateMenu(int id, MenuRequest request){
         Menu originMenu = findMenu(id);
         originMenu.update(
@@ -83,7 +78,7 @@ public class MenuService {
     }
 
     @Transactional
-    @CacheEvict(cacheNames = "menus", key = "'all'")
+    @CacheEvict(cacheNames = "menus", allEntries = true)
     public void deleteMenu(int id){
         Menu menu = findMenu(id);
         if (menuRepository.existsInOrderItemByMenuId(id) == 1L){
@@ -94,8 +89,8 @@ public class MenuService {
     }
 
     @Transactional
-    @CacheEvict(cacheNames = "menus", key = "'all'")
-    public MenuResponse changeAvailability(int id, Boolean available){
+    @CacheEvict(cacheNames = "menus", allEntries = true)
+    public MenuResponse changeAvailability(int id, boolean available){
         Menu originMenu = findMenu(id);
         originMenu.isAvailability(available);
 
@@ -105,13 +100,14 @@ public class MenuService {
     public List<MenuResponse> searchMenus(String keyword) {
         if (keyword == null || keyword.isBlank()
                 || keyword.strip().length() > 100) {
-            throw new IllegalArgumentException("검색어는 1~100자여야 합니다.");
+            throw new ValidationException("검색어는 1~100자여야 합니다.");
         }
 
         return menuRepository.searchByKeyword(keyword)
                 .stream().map(MenuResponse::from).toList();
     }
 
+    @Cacheable(value = "menus", key = "'available'")
     public List<MenuResponse> getAvailableMenus() {
         return menuRepository.findByAvailableTrueOrderByMenuIdAsc()
                 .stream().map(MenuResponse::from).toList();

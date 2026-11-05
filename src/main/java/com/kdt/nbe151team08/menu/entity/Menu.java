@@ -10,24 +10,25 @@ public class Menu {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer menuId;
+    private int menuId;
 
     @Column(nullable = false)
-    private Integer categoryId;
+    private int categoryId;
 
     @Column(nullable = false, length = 100)
     private String menuName;
 
     @Column(nullable = false)
-    private Integer unitPrice;
+    private int unitPrice;
 
     @Column(length = 300)
     private String description;
 
-    private Boolean available;
+    @Column(nullable = false)
+    private boolean available;
 
-    public Menu(Integer categoryId, String menuName,
-                Integer unitPrice, String description) {
+    public Menu(int categoryId, String menuName,
+                int unitPrice, String description) {
         this.categoryId = categoryId;
         this.menuName = menuName;
         this.unitPrice = unitPrice;
@@ -39,9 +40,9 @@ public class Menu {
     }
 
     public void update(
-            Integer categoryId,
+            int categoryId,
             String name,
-            Integer price,
+            int price,
             String description
     ) {
         this.categoryId = categoryId;
@@ -51,7 +52,7 @@ public class Menu {
     }
 
     public void isAvailability(
-            Boolean available
+            boolean available
     ){
         this.available = available;
     }
