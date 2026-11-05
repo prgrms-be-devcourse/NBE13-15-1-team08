@@ -77,36 +77,3 @@ cp src/main/resources/application-local.yaml.example src/main/resources/applicat
 | 접수·배송일 | `Order` 생성자 — `now(Asia/Seoul)`, `hour >= 14`면 익일 |
 | 취소 마감 | `OrderService#cancel` — `shippingDate` 14:00과 서울 `now` 비교 |
 | 취소 시각 | `Order#cancel` — `cancelledAt`도 서울 기준 |
-
-### 확인 방법 (임시 고정 시각 · 확인 후 원복)
-
-잠깐 `now`만 고정한 뒤 `requests/api-check.http`로 호출
-
-**1) 배송일 — `Order` 생성자**
-
-```java
-ZoneId seoul = ZoneId.of("Asia/Seoul");
-// ① 13:59:59 → shippingDate = 당일
-LocalDateTime now = LocalDateTime.of(2026, 10, 28, 13, 59, 59);
-// ② 14:00:00 → shippingDate = 다음날
-// LocalDateTime now = LocalDateTime.of(2026, 10, 28, 14, 0, 0);
-this.createdAt = now; // 확인 후: LocalDateTime.now(seoul) 로 원복
-```
-
-**2) 취소 마감 — `OrderService#cancel`**
-
-```java
-ZoneId seoul = ZoneId.of("Asia/Seoul");
-// ① 13:59:59 → 200
-LocalDateTime now = LocalDateTime.of(2026, 10, 28, 13, 59, 59);
-// ② 14:00:00 → 409 ORDER_NOT_CANCELLABLE
-// LocalDateTime now = LocalDateTime.of(2026, 10, 28, 14, 0, 0);
-if (!dt1.isAfter(now)) { ... } // 확인 후: LocalDateTime.now(seoul) 로 원복
-```
-
-### 기대 결과
-
-1. `now = 13:59:59` 접수 → `shippingDate == 2026-10-28`
-2. `now = 14:00:00` 접수 → `shippingDate == 2026-10-29`
-3. `shippingDate = 2026-10-28` + `PLACED` + `now = 13:59:59` 취소 → **200**
-4. 같은 조건 + `now = 14:00:00` 취소 → **409** `ORDER_NOT_CANCELLABLE`
