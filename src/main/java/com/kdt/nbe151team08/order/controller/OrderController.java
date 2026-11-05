@@ -9,6 +9,11 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+// [수정] 프론트 정적 페이지 Origin 허용 (명세: 127.0.0.1:8000)
+@CrossOrigin(origins = {
+        "http://localhost:8000",
+        "http://127.0.0.1:8000"
+})
 @RestController
 @RequestMapping("/api/v1/orders")
 @RequiredArgsConstructor
