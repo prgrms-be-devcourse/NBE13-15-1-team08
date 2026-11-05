@@ -17,10 +17,10 @@ import java.time.LocalDate;
 public record CustomerStatisticsResponse(
         LocalDate date,
         String email,
-        long orderCount,
-        long placedOrderCount,
-        long cancelledOrderCount,
-        long totalQuantity,
-        long totalAmount
+        int orderCount,
+        int placedOrderCount,
+        int cancelledOrderCount,
+        int totalQuantity,
+        int totalAmount
 ) {
 }
