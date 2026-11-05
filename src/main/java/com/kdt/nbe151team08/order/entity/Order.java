@@ -20,7 +20,7 @@ public class Order {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    private int id;
 
     @Column(nullable = false, length = 100)
     private String email;
@@ -38,7 +38,7 @@ public class Order {
 
     private LocalDateTime cancelledAt;       // cancelled_at (DATETIME)
 
-    private Integer totalAmount;             // total_amount
+    private int totalAmount;             // total_amount
 
     @Enumerated(EnumType.STRING)
     @Column(columnDefinition = "ENUM('PLACED', 'CANCELLED')")

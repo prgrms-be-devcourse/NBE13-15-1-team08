@@ -9,6 +9,7 @@ import com.kdt.nbe151team08.menu.service.MenuService;
 import com.kdt.nbe151team08.order.dto.OrderDto;
 import com.kdt.nbe151team08.order.entity.Order;
 import com.kdt.nbe151team08.order.entity.OrderItem;
+import com.kdt.nbe151team08.order.entity.OrderStatus;
 import com.kdt.nbe151team08.order.repository.OrderRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -30,7 +31,8 @@ public class OrderService {
     // 이메일별 주문 목록 (최신순)
     public List<OrderDto.Summary> findByEmail(String email) {
         if (email == null || email.isBlank()) {
-            throw new ValidationException("이메일은 필수입니다.");
+            //throw new ValidationException("이메일은 필수입니다.");
+            throw new ValidationException("VALIDATION_ERROR", "검색어가 비어있습니다.");
         }
         return orderRepository.findByEmailOrderByCreatedAtDesc(email.trim()).stream()
                 .map(OrderDto.Summary::from)
@@ -38,7 +40,7 @@ public class OrderService {
     }
 
     // 주문 상세
-    public OrderDto.Response findById(Integer id) {
+    public OrderDto.Response findById(int id) {
         return OrderDto.Response.from(getOrder(id));
     }
 
@@ -47,12 +49,14 @@ public class OrderService {
     public OrderDto.Response create(OrderDto.CreateRequest request) {
 
         if (request.email() == null || request.email().isBlank()) {
-            throw new ValidationException("이메일은 필수입니다.");
+            //throw new ValidationException("이메일은 필수입니다.");
+            throw new ValidationException("VALIDATION_ERROR", "이메일은 필수입니다.");
         }
         emailCeck(request.email());
         if (request.items() == null || request.items().isEmpty()) {
             //throw new ValidationException("주문 항목이 비어 있습니다.");
             throw new NotFoundException("MENU_NOT_FOUND", "메뉴를 찾을 수 없습니다."); //예외 수정  400 VALIDATION_ERROR 입력값을 확인해 주세요.
+            //throw new ValidationException("VALIDATION_ERROR", "입력값을 확인해 주세요.");
         }
 
         /*request.address() = placeClear(request.address());
@@ -62,12 +66,15 @@ public class OrderService {
         // createdAt = 현재 시간, cancelledAt/shippingDate/memo = null, status = PLACED
         Order order = new Order(request.email(), placeClear(request.address()), placeClear(request.postcode()));    //공백 제거(주소, 우편번호)한 Order
 
+        addressCeck(order.getEmail(),order.getShippingDate());
         for (OrderDto.ItemRequest itemRequest : request.items()) {
             if (itemRequest.menuId() == null) {
-                throw new ValidationException("메뉴 ID는 필수입니다.");
+                //throw new ValidationException("메뉴 ID는 필수입니다.");
+                throw new ValidationException("VALIDATION_ERROR", "메뉴 ID는 필수입니다.");
             }
             if (itemRequest.quantity() == null || itemRequest.quantity() <= 0) {
-                throw new ValidationException("수량은 1 이상이어야 합니다.");
+                //throw new ValidationException("수량은 1 이상이어야 합니다.");
+                throw new ValidationException("VALIDATION_ERROR", "수량은 1 이상이어야 합니다.");
             }
             order.addItem(createItem(itemRequest.menuId(), itemRequest.quantity()));
         }
@@ -80,9 +87,9 @@ public class OrderService {
 
     // 주문 취소
     @Transactional
-    public OrderDto.Response cancel(Integer id) {
+    public OrderDto.Response cancel(int id) {
         Order order = getOrder(id);
-        if(order.getCancelledAt() != null) {
+        if(order.getStatus() != OrderStatus.PLACED) {
             return OrderDto.Response.from(order);
         }
         LocalDateTime dt1 = order.getShippingDate().atTime(14, 0);
@@ -97,13 +104,15 @@ public class OrderService {
 
     // 재주문: 기존 주문과 같은 배송 정보·메뉴·수량으로 새 주문 생성 (가격은 현재 메뉴 가격 기준)
     @Transactional
-    public OrderDto.Response reorder(Integer id) {
+    public OrderDto.Response reorder(int id) {
         Order original = getOrder(id);
         // [수정] 재주문에도 일반 주문과 같은 배송지 조건 검증 적용
         validateShippingAddress(original.getAddress(), original.getPostcode());
 
+
         Order order = new Order(original.getEmail(), original.getAddress(), original.getPostcode());
 
+        addressCeck(order.getEmail(),order.getShippingDate()); //주소 확인
         for (OrderItem item : original.getItems()) {
             order.addItem(createItem(item.getMenuId(), item.getQuantity()));
         }
@@ -115,22 +124,49 @@ public class OrderService {
 
     // 주문 메모 수정
     @Transactional
-    public OrderDto.Response updateMemo(Integer id, OrderDto.MemoUpdateRequest request) {
+    public OrderDto.Response updateMemo(int id, OrderDto.MemoUpdateRequest request) {
         Order order = getOrder(id);
         order.changeMemo(request.memo());
         return OrderDto.Response.from(order);
     }
 
+    // 같은 이메일 + 같은 배송일 주문 중 주소가 서로 다른 게 있는지 검사
+    private void addressCeck(String email, LocalDate shippingDate) {
+        // 이메일로 주문을 조회한 뒤 배송일이 같은 주문만 남김
+        List<Order> sameDayOrders = orderRepository.findByEmailOrderByCreatedAtDesc(email).stream()
+                .filter(order -> shippingDate.equals(order.getShippingDate()))
+                .toList();
+
+        // 주소 종류가 2개 이상이면 주소가 다른 주문이 섞여 있는 것
+        long addressCount = sameDayOrders.stream()
+                .map(Order::getAddress)
+                .distinct()
+                .count();
+
+        if (addressCount > 1) {
+            throw new ConflictException("ADDRESS_MISMATCH", "같은 이메일과 배송일의 기존 주문과 배송지가 다릅니다.");
+        }
+    }
+
     // 주문 당시의 메뉴 이름과 단가를 스냅샷으로 저장
-    private OrderItem createItem(Integer menuId, int quantity) {
+    private OrderItem createItem(int menuId, int quantity) {
+        /*if (menuId == null) {
+            //throw new ValidationException("메뉴 ID는 필수입니다.");
+            throw new ValidationException("VALIDATION_ERROR", "메뉴 ID는 필수입니다.");
+        }
+        if (quantity == null || quantity <= 0) {
+            //throw new ValidationException("수량은 1 이상이어야 합니다.");
+            throw new ValidationException("VALIDATION_ERROR", "수량은 1 이상이어야 합니다.");
+        }*/
         MenuResponse menu = menuService.getMenu(menuId);
         if (!menu.available()) {
-            throw new ValidationException("판매 중이 아닌 메뉴입니다: ");
+            //throw new ValidationException("판매 중이 아닌 메뉴입니다: ");
+            throw new ConflictException("MENU_UNAVAILABLE", "판매 중지된 메뉴가 포함되어 있습니다.");
         }
         return new OrderItem(menu.id(), menu.name(), menu.price(), quantity);
     }
 
-    private Order getOrder(Integer id) {
+    private Order getOrder(int id) {
         return orderRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("ORDER_NOT_FOUND", "주문을 찾을 수 없습니다."));
     }
@@ -140,13 +176,16 @@ public class OrderService {
     //  - 우편번호: 필수, 숫자 5자리
     private void validateShippingAddress(String address, String postcode) {
         if (address == null || address.isBlank()) {
-            throw new ValidationException("배송 주소는 필수입니다.");
+            //throw new ValidationException("배송 주소는 필수입니다.");
+            throw new ValidationException("VALIDATION_ERROR", "배송 주소는 필수입니다.");
         }
         if (address.length() > 200) {
-            throw new ValidationException("배송 주소는 200자 이하여야 합니다.");
+            //throw new ValidationException("배송 주소는 200자 이하여야 합니다.");
+            throw new ValidationException("VALIDATION_ERROR", "배송 주소는 200자 이하여야 합니다.");
         }
         if (postcode == null || !postcode.matches("^[0-9]{5}$")) {
-            throw new ValidationException("우편번호는 숫자 5자리여야 합니다.");
+            //throw new ValidationException("우편번호는 숫자 5자리여야 합니다.");
+            throw new ValidationException("VALIDATION_ERROR", "우편번호는 숫자 5자리여야 합니다.");
         }
     }
 
@@ -155,7 +194,8 @@ public class OrderService {
         if(!(email != null
                 && email.length() >= 1 && email.length() <= 100
                 && email.matches("^[A-Za-z0-9._%+-]+@[A-Za-z0-9-]+(?:\\.[A-Za-z0-9-]+)+$"))){
-            throw new ValidationException("이메일은 필수입니다.");   //400 VALIDATION_ERROR 입력값을 확인해 주세요.
+            //throw new ValidationException("이메일은 필수입니다.");   //400 VALIDATION_ERROR 입력값을 확인해 주세요.
+            throw new ValidationException("VALIDATION_ERROR", "이메일 형식이 맞지않습니다.");
         }
     }
 

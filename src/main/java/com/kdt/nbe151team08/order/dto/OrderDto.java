@@ -25,10 +25,10 @@ public class OrderDto {
     public record MemoUpdateRequest(String memo) {
     }
 
-    public record Response(Integer id, String email, String address, String postcode,
+    public record Response(int id, String email, String address, String postcode,
                            LocalDate shippingDate, @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ssXXX", timezone = "Asia/Seoul")
                            OffsetDateTime createdAt, @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ssXXX", timezone = "Asia/Seoul") OffsetDateTime cancelledAt,
-                           Integer totalAmount, OrderStatus status, String memo,
+                           int totalAmount, OrderStatus status, String memo,
                            List<ItemResponse> items) {
         public static Response from(Order order) {
             return new Response(
@@ -50,11 +50,11 @@ public class OrderDto {
     }
 
     // 이메일별 주문 목록 응답: [ { "id", "createdAt", "shippingDate", "totalAmount", "status" } ]
-    public record Summary(Integer id,
+    public record Summary(int id,
                           @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ssXXX", timezone = "Asia/Seoul")
                           OffsetDateTime createdAt,
                           LocalDate shippingDate,
-                          Integer totalAmount,
+                          int totalAmount,
                           OrderStatus status) {
         private static final ZoneId SEOUL = ZoneId.of("Asia/Seoul");
 
@@ -70,8 +70,8 @@ public class OrderDto {
         }
     }
 
-    public record ItemResponse(Integer menuId, String menuName, Integer unitPrice,
-                               Integer quantity, Integer lineAmount) {
+    public record ItemResponse(int menuId, String menuName, int unitPrice,
+                               int quantity, int lineAmount) {
         public static ItemResponse from(OrderItem item) {
             return new ItemResponse(
                     item.getMenuId(),
