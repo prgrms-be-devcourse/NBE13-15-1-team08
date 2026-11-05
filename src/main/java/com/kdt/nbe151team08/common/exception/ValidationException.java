@@ -22,7 +22,10 @@ public class ValidationException extends RuntimeException {
         this.fieldMessage = null;
     }
 
-    /** 특정 필드 오류일 때 (message는 명세 기본 문구 사용) */
+    /**
+     * 특정 필드 오류일 때.
+     * message는 명세 기본 문구, field/fieldMessage는 ErrorResponse.fieldErrors에 넣음.
+     */
     public ValidationException(String field, String fieldMessage) {
         super("입력값을 확인해 주세요.");
         this.field = field;

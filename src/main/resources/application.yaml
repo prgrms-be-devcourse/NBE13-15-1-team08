@@ -1,3 +1,40 @@
 spring:
   application:
-    name: NBE13-15-1-team01
+    name: NBE13-15-1-team08
+  profiles:
+    default: local
+  datasource:
+    url: ${DB_URL:jdbc:mysql://127.0.0.1:3306/kdt-team08?allowPublicKeyRetrieval=true&sslMode=DISABLED&serverTimezone=Asia/Seoul&characterEncoding=UTF-8}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+  jpa:
+    hibernate:
+      ddl-auto: none
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        highlight_sql: true
+        use_sql_comments: true
+  data:
+    redis:
+      host: 127.0.0.1
+      port: 6379
+  # 메뉴 전체 목록 캐시(menus). 변경 API에서 @CacheEvict. 미갱신 시 최대 60초 후 만료됨
+  cache:
+    type: redis
+    cache-names: menus
+    redis:
+      time-to-live: 60s
+
+server:
+  port: 8080
+
+# RestClient 외부 게시글 조회 (GET /api/v1/reference/posts/{postId})
+# - base-url: 외부 서버 주소 (기본 jsonplaceholder, 테스트 시 Mock 서버로 교체)
+# - connect-timeout: 연결 대기 최대 3초
+# - read-timeout: 응답 읽기 대기 최대 5초
+reference:
+  base-url: ${REFERENCE_BASE_URL:https://jsonplaceholder.typicode.com}
+  connect-timeout: 3s
+  read-timeout: 5s

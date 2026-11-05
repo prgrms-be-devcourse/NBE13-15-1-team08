@@ -73,7 +73,8 @@ public class CategoryService {
 
     /**
      * A04 카테고리 수정.
-     * 검사 순서: 이름 형식(400) → 존재(404) → 중복(409).
+     * 검사 순서 고정: 이름 형식(400) → 존재 여부(404) → 이름 중복(409).
+     * 존재하지 않는 ID + 잘못된 이름이 동시에 와도 400을 먼저 내려 명세에 맞춤.
      */
     @Transactional
     public CategoryResponse update(int categoryId, CategoryRequest request) {
@@ -83,13 +84,16 @@ public class CategoryService {
         }
         name = name.trim();
 
+        // 1) 400 VALIDATION_ERROR
         if (name.isEmpty() || name.length() > 30) {
             throw new ValidationException("name", "카테고리명은 앞뒤 공백을 제외하고 1~30자로 입력해 주세요.");
         }
 
+        // 2) 404 CATEGORY_NOT_FOUND
         Category category = this.categoryRepository.findById(categoryId)
                 .orElseThrow(() -> new NotFoundException("CATEGORY_NOT_FOUND", "카테고리를 찾을 수 없습니다."));
 
+        // 3) 409 CATEGORY_NAME_DUPLICATED
         if (this.categoryRepository.existsByNameAndCategoryIdNot(name, categoryId)) {
             throw new CategoryNameDuplicatedException("같은 이름의 카테고리가 이미 있습니다.");
         }

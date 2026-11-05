@@ -6,6 +6,7 @@ import com.kdt.nbe151team08.common.exception.ConflictException;
 import com.kdt.nbe151team08.common.exception.ErrorResponse;
 import com.kdt.nbe151team08.common.exception.NotFoundException;
 import com.kdt.nbe151team08.common.exception.ValidationException;
+import com.kdt.nbe151team08.reference.OutsideApiException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -18,7 +19,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * API 예외를 ErrorResponse(code, message, fieldErrors)로 변환하는 공통 처리.
+ * API 예외 → 공통 응답 {@link ErrorResponse}(code, message, fieldErrors)로 변환함.
+ * 클라이언트가 같은 JSON 구조로 파싱하도록 맞춤.
  */
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -27,6 +29,16 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(NotFoundException.class)
     public ResponseEntity<ErrorResponse> handleNotFound(NotFoundException e) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(new ErrorResponse(e.getCode(), e.getMessage(), Map.of()));
+    }
+
+    /**
+     * RestClient 외부 조회 실패 처리.
+     * 502 OUTSIDE_API_FAILED / 504 OUTSIDE_API_TIMEOUT — fieldErrors 빈 객체.
+     */
+    @ExceptionHandler(OutsideApiException.class)
+    public ResponseEntity<ErrorResponse> handleOutsideApi(OutsideApiException e) {
+        return ResponseEntity.status(e.getStatus())
                 .body(new ErrorResponse(e.getCode(), e.getMessage(), Map.of()));
     }
 
@@ -51,7 +63,7 @@ public class GlobalExceptionHandler {
                 .body(new ErrorResponse("CATEGORY_IN_USE", e.getMessage(), Map.of()));
     }
 
-    // 400 - 서비스에서 던진 검증 오류
+    // 400 - 서비스 검증 오류 (field 있으면 fieldErrors에 넣고, 없으면 빈 객체)
     @ExceptionHandler(ValidationException.class)
     public ResponseEntity<ErrorResponse> handleValidation(ValidationException e) {
         Map<String, String> fieldErrors = e.getField() == null || e.getFieldMessage() == null
@@ -79,14 +91,32 @@ public class GlobalExceptionHandler {
                 .body(new ErrorResponse("VALIDATION_ERROR", "입력값을 확인해 주세요.", errors));
     }
 
-    // 400 - JSON 문법/타입 오류 등 (필드 지정 어려우면 {})
-    @ExceptionHandler({
-            HttpMessageNotReadableException.class,
-            MethodArgumentTypeMismatchException.class
-    })
-    public ResponseEntity<ErrorResponse> handleBadRequest(Exception e) {
-        return ResponseEntity.badRequest()
-                .body(new ErrorResponse("VALIDATION_ERROR", "입력값을 확인해 주세요.", Map.of()));
+    // JSON 문법이나 형식 오류
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<ErrorResponse> handleBadJson(
+            HttpMessageNotReadableException e) {
+
+        return ResponseEntity.badRequest().body(
+                new ErrorResponse(
+                        "VALIDATION_ERROR",
+                        "입력값을 확인해 주세요.",
+                        Map.of()
+                )
+        );
+    }
+
+    // page=abc, size=abc 등 정수 변환 오류
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<ErrorResponse> handleTypeMismatch(
+            MethodArgumentTypeMismatchException e) {
+
+        return ResponseEntity.badRequest().body(
+                new ErrorResponse(
+                        "VALIDATION_ERROR",
+                        "입력값을 확인해 주세요.",
+                        Map.of(e.getName(), "올바른 정수를 입력해 주세요.")
+                )
+        );
     }
 
     @ExceptionHandler(IllegalArgumentException.class)

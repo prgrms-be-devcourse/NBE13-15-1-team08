@@ -1,0 +1,18 @@
+### 외부 게시글 조회 (RestClient)
+@baseUrl = http://localhost:8080
+
+### 성공 — 외부 서버 실제 응답(고정값 아님)
+GET {{baseUrl}}/api/v1/reference/posts/1
+Accept: application/json
+
+### 형식 오류 — 400 VALIDATION_ERROR
+GET {{baseUrl}}/api/v1/reference/posts/abc
+Accept: application/json
+
+### 범위 오류 — postId < 1 → 400
+GET {{baseUrl}}/api/v1/reference/posts/0
+Accept: application/json
+
+### 외부 404 — REFERENCE_POST_NOT_FOUND
+GET {{baseUrl}}/api/v1/reference/posts/999999
+Accept: application/json

@@ -1,6 +1,7 @@
 package com.kdt.nbe151team08.menu.controller;
 
 import com.kdt.nbe151team08.menu.dto.MenuAvailabilityRequest;
+import com.kdt.nbe151team08.menu.dto.MenuPageResponse;
 import com.kdt.nbe151team08.menu.dto.MenuRequest;
 import com.kdt.nbe151team08.menu.dto.MenuResponse;
 import com.kdt.nbe151team08.menu.service.MenuService;
@@ -44,6 +45,12 @@ public class MenuController {
     @GetMapping("/search")
     public List<MenuResponse> searchMenus(@RequestParam(required = false) String keyword){
         return menuService.searchMenus(keyword);
+    }
+
+    @GetMapping("/page")
+    public MenuPageResponse getMenuPages(@RequestParam(defaultValue = "0") int page,
+                                               @RequestParam(defaultValue = "10") int size){
+        return menuService.getMenuPages(page,size);
     }
 
     @PostMapping
