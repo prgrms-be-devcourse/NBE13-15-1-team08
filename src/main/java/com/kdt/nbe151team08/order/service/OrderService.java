@@ -66,7 +66,7 @@ public class OrderService {
         // createdAt = 현재 시간, cancelledAt/shippingDate/memo = null, status = PLACED
         Order order = new Order(request.email(), placeClear(request.address()), placeClear(request.postcode()));    //공백 제거(주소, 우편번호)한 Order
 
-        addressCeck(order.getEmail(),order.getShippingDate());
+        addressCheck(order.getEmail(),order.getShippingDate(), order.getAddress(), order.getPostcode());
         for (OrderDto.ItemRequest itemRequest : request.items()) {
             if (itemRequest.menuId() == null) {
                 //throw new ValidationException("메뉴 ID는 필수입니다.");
@@ -112,7 +112,7 @@ public class OrderService {
 
         Order order = new Order(original.getEmail(), original.getAddress(), original.getPostcode());
 
-        addressCeck(order.getEmail(),order.getShippingDate()); //주소 확인
+        addressCheck(order.getEmail(),order.getShippingDate(), order.getAddress(), order.getPostcode()); //주소 확인
         for (OrderItem item : original.getItems()) {
             order.addItem(createItem(item.getMenuId(), item.getQuantity()));
         }
@@ -131,20 +131,20 @@ public class OrderService {
     }
 
     // 같은 이메일 + 같은 배송일 주문 중 주소가 서로 다른 게 있는지 검사
-    private void addressCeck(String email, LocalDate shippingDate) {
-        // 이메일로 주문을 조회한 뒤 배송일이 같은 주문만 남김
-        List<Order> sameDayOrders = orderRepository.findByEmailOrderByCreatedAtDesc(email).stream()
+    private void addressCheck(String email, LocalDate shippingDate,
+                              String address, String postcode) {
+        String newAddress = address.strip();
+        String newPostcode = postcode.strip();
+
+        boolean mismatch = orderRepository.findByEmailOrderByCreatedAtDesc(email).stream()
                 .filter(order -> shippingDate.equals(order.getShippingDate()))
-                .toList();
+                .filter(order -> order.getStatus() == OrderStatus.PLACED)
+                .anyMatch(order -> !newAddress.equals(order.getAddress().strip())
+                        || !newPostcode.equals(order.getPostcode().strip()));
 
-        // 주소 종류가 2개 이상이면 주소가 다른 주문이 섞여 있는 것
-        long addressCount = sameDayOrders.stream()
-                .map(Order::getAddress)
-                .distinct()
-                .count();
-
-        if (addressCount > 1) {
-            throw new ConflictException("ADDRESS_MISMATCH", "같은 이메일과 배송일의 기존 주문과 배송지가 다릅니다.");
+        if (mismatch) {
+            throw new ConflictException("ADDRESS_MISMATCH",
+                    "같은 이메일과 배송일의 기존 주문과 배송지가 다릅니다.");
         }
     }
 
